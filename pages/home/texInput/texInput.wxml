@@ -1,0 +1,70 @@
+<!--pages/home/texInput.wxml-->
+<text class="title">税率信息：</text>
+<view style="margin-top: 20rpx;">
+  <t-input
+	id="salary"
+  label="月工资"
+  placeholder="50000"
+  suffix="元"
+  align="right"
+  type="number"
+  bindchange="onTexInput"
+  tips="{{texError ? '请输入正确数字' : ''}}"
+  t-class-tips="tips"
+/>
+<t-input
+	id="old"
+  label="养老"
+  placeholder="8"
+  suffix="%"
+  align="right"
+  type="number"
+  bindchange="onTexInput"
+  tips="{{texError ? '请输入正确的税率' : ''}}"
+  t-class-tips="tips"
+/>
+<t-input
+	id="lost"
+  label="失业"
+  placeholder="0.5"
+  suffix="%"
+  align="right"
+  type="number"
+  bindchange="onTexInput"
+  tips="{{texError ? '请输入正确的税率' : ''}}"
+  t-class-tips="tips"
+/>
+<t-input
+	id="medical"
+  label="医疗"
+  placeholder="2"
+  suffix="% + 3元"
+  align="right"
+  type="number"
+  bindchange="onTexInput"
+  tips="{{texError ? '请输入正确的税率' : ''}}"
+  t-class-tips="tips"
+/>
+<t-input
+	id="HousingProvidentFund"
+  label="住房公积金"
+  placeholder="12"
+  suffix="%"
+  align="right"
+  type="number"
+  bindchange="onTexInput"
+  tips="{{texError ? '请输入正确的税率' : ''}}"
+  t-class-tips="tips"
+/>
+<t-input
+	id="attach"
+  label="专项附加扣除"
+  placeholder="6000"
+  suffix=""
+  align="right"
+  type="number"
+  bindchange="onTexInput"
+  tips="{{texError ? '请输入正确的税率' : ''}}"
+  t-class-tips="tips"
+/>
+</view>

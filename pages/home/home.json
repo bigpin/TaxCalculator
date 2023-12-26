@@ -1,0 +1,12 @@
+{
+  "usingComponents": {
+    "pull-down-list": "../../components/pull-down-list/index",
+    "texInput": "./texInput/texInput",
+    "group-btn": "./group-btn/index",
+    "output": "./output/output"
+  },
+  "navigationBarTitleText": "个税计算器",
+  "navigationBarBackgroundColor": "#f6f6f6",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#f6f6f6"
+}

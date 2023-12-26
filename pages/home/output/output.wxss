@@ -1,0 +1,4 @@
+/* pages/home/output.wxss */
+.external-class {
+  height: 800rpx;
+}

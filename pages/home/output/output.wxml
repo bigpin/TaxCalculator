@@ -1,0 +1,9 @@
+<!--pages/home/output.wxml-->
+<t-textarea
+  id="o"
+  t-class="external-class"
+  label="个税信息:"
+  placeholder="个税"
+  value="..."
+  disableDefaultPadding="{{true}}"
+/>
