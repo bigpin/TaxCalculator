@@ -9,7 +9,7 @@
   align="right"
   type="number"
   bindchange="onTexInput"
-  tips="{{texError ? '请输入正确数字' : ''}}"
+  tips="{{salaryErr ? '请输入正确数字' : ''}}"
   t-class-tips="tips"
 />
 <t-input
@@ -20,7 +20,7 @@
   align="right"
   type="number"
   bindchange="onTexInput"
-  tips="{{texError ? '请输入正确的税率' : ''}}"
+  tips="{{oldErr ? '请输入正确的税率' : ''}}"
   t-class-tips="tips"
 />
 <t-input
@@ -31,7 +31,7 @@
   align="right"
   type="number"
   bindchange="onTexInput"
-  tips="{{texError ? '请输入正确的税率' : ''}}"
+  tips="{{lostErr ? '请输入正确的税率' : ''}}"
   t-class-tips="tips"
 />
 <t-input
@@ -42,7 +42,7 @@
   align="right"
   type="number"
   bindchange="onTexInput"
-  tips="{{texError ? '请输入正确的税率' : ''}}"
+  tips="{{medicalErr ? '请输入正确的税率' : ''}}"
   t-class-tips="tips"
 />
 <t-input
@@ -53,7 +53,7 @@
   align="right"
   type="number"
   bindchange="onTexInput"
-  tips="{{texError ? '请输入正确的税率' : ''}}"
+  tips="{{housingProvidentFundErr ? '请输入正确的税率' : ''}}"
   t-class-tips="tips"
 />
 <t-input
@@ -64,7 +64,7 @@
   align="right"
   type="number"
   bindchange="onTexInput"
-  tips="{{texError ? '请输入正确的税率' : ''}}"
+  tips="{{attachErr ? '请输入正确的税率' : ''}}"
   t-class-tips="tips"
 />
 </view>
