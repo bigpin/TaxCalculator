@@ -24,7 +24,12 @@ Component({
         medical: '2',
         housingProvidentFund: '12',
         attch: '6000',
-        texError: false,
+        salaryErr: false,
+        oldErr: false,
+        lostErr: false,
+        medicalErr: false,
+        housingProvidentFundErr: false,
+        attchErr: false,
         monthlyNetSalaryArray: []
     },
     lifetimes: {
@@ -53,13 +58,29 @@ Component({
             this.attchInput.updateValue(this.data.attch);
         },
         onTexInput(e) {
-            const { texError } = this.data;
             const isNumber = /^\d+(\.\d+)?$/.test(e.detail.value);
-            if (texError === isNumber) {
-                this.setData({
-                    texError: !isNumber,
-                });
+
+            switch (e.currentTarget.id) {
+                case 'salary':
+                    this.setData({ salaryErr: !isNumber });
+                    break;
+                case 'old':
+                    this.setData({ oldErr: !isNumber });
+                    break;
+                case 'lost':
+                    this.setData({ lostErr: !isNumber });
+                    break;
+                case 'medical':
+                    this.setData({ medicalErr: !isNumber });
+                    break;
+                case 'HousingProvidentFund':
+                    this.setData({ housingProvidentFundErr: !isNumber });
+                    break;
+                case 'attch':
+                    this.setData({ attchErr: !isNumber });
+                    break;
             }
+
         },
         cal(e) {
             // 输出每个月的实际入账金额
