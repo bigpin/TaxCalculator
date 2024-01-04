@@ -8,8 +8,12 @@ Page({
     data: {
         list,
         detailInfo: [],
+        currentTab: 0,
     },
     onLoad(options) {
+        // this.setData({
+        //     currentTab: 0,
+        //   });
         // const { path, q } = options;
         // console.log(path);
         // if (q) {
@@ -64,6 +68,12 @@ Page({
     //         inputValue: e.detail.value
     //     })
     // },
+    onTabClick: function(e) {
+        console.log('page_change', e.detail);
+        this.setData({
+            currentTab: e.detail,
+          });
+    },
     onTap: function (e) {
         console.log('tap clear', e.detail);
         const targetComponent = this.selectComponent('#taxInput');

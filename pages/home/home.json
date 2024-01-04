@@ -3,7 +3,8 @@
     "pull-down-list": "../../components/pull-down-list/index",
     "texInput": "./texInput/texInput",
     "group-btn": "./group-btn/index",
-    "output": "./output/output"
+    "output": "./output/output",
+    "navi_tab": "./navi_tab/index"
   },
   "navigationBarTitleText": "个税计算器",
   "navigationBarBackgroundColor": "#f6f6f6",
