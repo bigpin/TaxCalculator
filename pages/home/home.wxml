@@ -8,7 +8,9 @@
   </view>
   <view wx:else="{{currentTab.value === 1}}">
     <!-- 显示第二个 tab 的内容 -->
-    <view> {{currentTab.value}} </view>
+    <yebInput id="taxInput" />
+    <group-btn bind:tap="onTapYEB" />
+    <output id="taxInfo"/>
   </view>
   <navi_tab bind:page_change="onTabClick" />
 </view>

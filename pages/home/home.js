@@ -75,7 +75,6 @@ Page({
           });
     },
     onTap: function (e) {
-        console.log('tap clear', e.detail);
         const targetComponent = this.selectComponent('#taxInput');
 
         // 调用被调用组件的函数
@@ -107,6 +106,23 @@ Page({
                         childArr.push({ name: `${index + 1}月`, label: `${netSalary.salary.toFixed(2)}, 累积缴个税：${netSalary.tax.toFixed(2)}` });
                     });
                     outputList.setData({ childArr: childArr });
+                }
+            }
+        }
+    },
+    onTapYEB: function(e) {
+        const targetComponent = this.selectComponent('#taxInput');
+
+        // 调用被调用组件的函数
+        if (targetComponent) {
+            if (e.detail.buttonId === 'reset') {
+                targetComponent.resetValues();
+            } else {
+                targetComponent.cal();
+                const output = this.selectComponent('#taxInfo')
+                if (output) {
+                    output.clearText()
+                    output.updateTax(`年终奖总计：${targetComponent.yebAndTax.salary}\n税率：${targetComponent.yebAndTax.tax_rate.toFixed(0)}%\n缴税：${targetComponent.yebAndTax.tax.toFixed(2)}\n到手：${targetComponent.yebAndTax.balance.toFixed(2)}`);
                 }
             }
         }
