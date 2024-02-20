@@ -96,16 +96,16 @@ Page({
                 }
                 const outputList = this.selectComponent('#taxInfoList');
                 if (outputList) {
-                    let childArr = []
+                    let tempArr = []
                     targetComponent.monthlyNetSalaryArray.forEach((netSalary, index) => {
                         // 更新List
                         this.data.detailInfo.push({
                             month: `${index + 1}月`,
                             info: `实际入账：${netSalary.salary.toFixed(2)}元\n养老保险：${netSalary.old.toFixed(2)}元\n失业保险：${netSalary.lost.toFixed(2)}元\n医疗保险：${netSalary.medical.toFixed(2)}元\n住房公积金：${netSalary.house.toFixed(2)}元\n累积缴个税：${netSalary.tax.toFixed(2)}元`
                         });
-                        childArr.push({ name: `${index + 1}月`, label: `${netSalary.salary.toFixed(2)}, 累积缴个税：${netSalary.tax.toFixed(2)}` });
+                        tempArr.push({ name: `${index + 1}月`, label: `${netSalary.salary.toFixed(2)}, 累积缴个税：${netSalary.tax.toFixed(2)}` });
                     });
-                    outputList.setData({ childArr: childArr });
+                    outputList.setData({ childArr: tempArr });
                 }
             }
         }

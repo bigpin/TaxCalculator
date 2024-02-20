@@ -1,5 +1,5 @@
 <!--pages/home/texInput.wxml-->
-<text class="title">税率信息：</text>
+<text class="title">年终奖金额：</text>
 <view style="margin-top: 20rpx;">
   <t-input
 	id="salary"

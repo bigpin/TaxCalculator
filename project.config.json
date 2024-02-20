@@ -25,12 +25,15 @@
             "outputPath": ""
         },
         "packNpmRelationList": [],
-        "ignoreUploadUnusedFiles": true
+        "ignoreUploadUnusedFiles": true,
+        "condition": true
     },
     "compileType": "miniprogram",
     "appid": "wxbe92b29621adef28",
     "simulatorType": "wechat",
-    "simulatorPluginLibVersion": {},
+    "simulatorPluginLibVersion": {
+        "wxext14566970e7e9f62": "2.27.3-4"
+    },
     "editorSetting": {
         "tabIndent": "insertSpaces",
         "tabSize": 4
@@ -40,5 +43,6 @@
     "packOptions": {
         "ignore": [],
         "include": []
-    }
+    },
+    "projectArchitecture": "multiPlatform"
 }
