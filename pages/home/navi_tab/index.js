@@ -4,7 +4,7 @@ Component({
     list: [
       { value: 'p_tax', label: '个税' },
       { value: 'y_tax', label: '年终奖' },
-      // { value: 'chat', label: '聊天' },
+      { value: 'exchange', label: '实时汇率' },
       // { value: 'user', label: '我的' },
     ],
   },

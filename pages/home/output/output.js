@@ -19,7 +19,7 @@ Component({
      * 组件的方法列表
      */
     methods: {
-        updateTax(value, add) {
+        updateText(value, add=false) {
             const com = this.selectComponent("#o");
             console.log(value)
             if (add) {

@@ -2,7 +2,7 @@
 <t-textarea
   id="o"
   t-class="external-class"
-  label="个税信息:"
+  label="信息:"
   placeholder="个税"
   value="..."
   disableDefaultPadding="{{true}}"

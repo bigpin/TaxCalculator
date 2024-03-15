@@ -5,7 +5,8 @@
     "group-btn": "./group-btn/index",
     "output": "./output/output",
     "navi_tab": "./navi_tab/index",
-    "yebInput": "./yebInput/index"
+    "yebInput": "./yebInput/index",
+    "area": "./area/index"
   },
   "navigationBarTitleText": "个税计算器",
   "navigationBarBackgroundColor": "#f6f6f6",

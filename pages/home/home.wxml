@@ -1,16 +1,22 @@
 <view class="main">
   <view wx:if="{{currentTab === 0 || currentTab.value === 0}}">
     <texInput id="taxInput" />
-    <group-btn bind:tap="onTap" />
+    <group-btn first="恢复默认值" second="计算" bind:tap="onTap" />
     <!-- <output id="taxInfo"/> -->
     <!-- <view class="desc"> 个税计算结果 </view> -->
     <pull-down-list id='taxInfoList' wx:for="{{list}}" name="{{item.name}}" icon="{{item.icon}}" defaultOpen="true" wx:key="name" childArr="{{item.childArr}}" bind:click="clickHandle" />
   </view>
-  <view wx:else="{{currentTab.value === 1}}">
+  <view wx:elif="{{currentTab.value === 1}}">
     <!-- 显示第二个 tab 的内容 -->
     <yebInput id="taxInput" />
-    <group-btn bind:tap="onTapYEB" />
+    <group-btn first="恢复默认值" second="计算" bind:tap="onTapYEB" />
     <output id="taxInfo"/>
+  </view>
+  <view wx:else="{{currentTab.value === 2}}">
+    <text>汇率💱</text>
+    <area id="exchangeSetting" bind:exchange="exchangeChanged"> </area>
+    <group-btn first="AB调换" second="查询" bind:tap="onTapExchange" />
+    <output id="exchangeInfo"/>
   </view>
   <navi_tab bind:page_change="onTabClick" />
 </view>
