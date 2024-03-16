@@ -200,10 +200,7 @@ Page({
 
         // 调用被调用组件的函数
         if (targetComponent) {
-            if (e.detail.buttonId === 'reset') {
-                targetComponent.exchange();
-            } else {
-            }
+            targetComponent.exchange();
         }
     }
 });
