@@ -116,7 +116,7 @@ Page({
         // 保存需要使用的数据
         const exchangeCache = this.data.exchangeCache;
         wx.request({
-            url: 'http://op.juhe.cn/onebox/exchange/currency?from=' + from_code + '&to=' + to_code + '&version=2&key=9d9e5a11240974a2fa51f4ce3c7c671c',
+            url: 'https://op.juhe.cn/onebox/exchange/currency?from=' + from_code + '&to=' + to_code + '&version=2&key=9d9e5a11240974a2fa51f4ce3c7c671c',
             method: 'GET',
             success: function (res) {
                 // 请求成功时，解析返回的汇率数据
@@ -134,6 +134,7 @@ Page({
             },
             fail: function (error) {
                 // 请求失败时的处理
+                targetComponent.updateText('获取汇率信息失败：' + error.errMsg + error.errno);
                 console.error('获取汇率信息失败：', error);
             }
         });
