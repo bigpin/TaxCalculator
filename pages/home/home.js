@@ -102,7 +102,7 @@ Page({
         // 先查一下有没有cache
         var key = from_code + to_code;
         if (this.data.exchangeCache[key] &&
-            new Date() - new Date(this.data.exchangeCache[key][0].updateTime) > 30 * 60000) {
+            new Date() - new Date(this.data.exchangeCache[key][0].updateTime.replace(" ", "T")) < 30 * 60000) {
             var exchangeRateData = this.data.exchangeCache[key];
             console.log('already in cache');
             var from_name = exchangeRateData[0].currencyF_Name;
@@ -111,33 +111,35 @@ Page({
             var updateTime = exchangeRateData[0].updateTime;
             var t = '1' + from_name + from_code + '兑换' + count + to_name + to_code + '\n' + updateTime;
             targetComponent.updateText(t);
+        } else {
+            // 没有数据，从新获取实时数据
+            // 保存需要使用的数据
+            const exchangeCache = this.data.exchangeCache;
+            wx.request({
+                url: 'https://op.juhe.cn/onebox/exchange/currency?from=' + from_code + '&to=' + to_code + '&version=2&key=9d9e5a11240974a2fa51f4ce3c7c671c',
+                method: 'GET',
+                success: function (res) {
+                    // 请求成功时，解析返回的汇率数据
+                    var exchangeRateData = res.data.result;
+                    exchangeCache[key] = exchangeRateData;
+                    // 处理您的汇率数据，更新小程序页面显示
+                    // 例如：this.setData({ exchangeRate: exchangeRateData });
+                    console.log(exchangeRateData);
+                    var from_name = exchangeRateData[0].currencyF_Name;
+                    var to_name = exchangeRateData[0].currencyT_Name;
+                    var count = exchangeRateData[0].exchange;
+                    var updateTime = exchangeRateData[0].updateTime;
+                    var t = '1' + from_name + from_code + '兑换' + count + to_name + to_code + '\n' + updateTime;
+                    targetComponent.updateText(t);
+                },
+                fail: function (error) {
+                    // 请求失败时的处理
+                    targetComponent.updateText('获取汇率信息失败：' + error.errMsg + error.errno);
+                    console.error('获取汇率信息失败：', error);
+                }
+            });
         }
-        // 没有数据，从新获取实时数据
-        // 保存需要使用的数据
-        const exchangeCache = this.data.exchangeCache;
-        wx.request({
-            url: 'https://op.juhe.cn/onebox/exchange/currency?from=' + from_code + '&to=' + to_code + '&version=2&key=9d9e5a11240974a2fa51f4ce3c7c671c',
-            method: 'GET',
-            success: function (res) {
-                // 请求成功时，解析返回的汇率数据
-                var exchangeRateData = res.data.result;
-                exchangeCache[key] = exchangeRateData;
-                // 处理您的汇率数据，更新小程序页面显示
-                // 例如：this.setData({ exchangeRate: exchangeRateData });
-                console.log(exchangeRateData);
-                var from_name = exchangeRateData[0].currencyF_Name;
-                var to_name = exchangeRateData[0].currencyT_Name;
-                var count = exchangeRateData[0].exchange;
-                var updateTime = exchangeRateData[0].updateTime;
-                var t = '1' + from_name + from_code + '兑换' + count + to_name + to_code + '\n' + updateTime;
-                targetComponent.updateText(t);
-            },
-            fail: function (error) {
-                // 请求失败时的处理
-                targetComponent.updateText('获取汇率信息失败：' + error.errMsg + error.errno);
-                console.error('获取汇率信息失败：', error);
-            }
-        });
+
     },
 
     // 计算个税
