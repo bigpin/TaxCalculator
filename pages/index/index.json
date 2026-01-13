@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "日常万能助手",
+  "navigationBarBackgroundColor": "#0052d9",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f5f5f5",
+  "usingComponents": {
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-tag": "tdesign-miniprogram/tag/tag"
+  }
+}

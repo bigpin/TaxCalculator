@@ -1,0 +1,279 @@
+page {
+  background-color: #f5f5f5;
+}
+
+.container {
+  min-height: 100vh;
+  padding: 30rpx;
+  padding-bottom: 60rpx;
+}
+
+/* 上传区域 */
+.upload-section {
+  margin-bottom: 30rpx;
+}
+
+.upload-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400rpx;
+  background-color: #fff;
+  border: 2rpx dashed #0052d9;
+  border-radius: 20rpx;
+  transition: all 0.3s;
+}
+
+.upload-box:active {
+  background-color: #f5f8ff;
+}
+
+.upload-text {
+  margin-top: 20rpx;
+  font-size: 32rpx;
+  color: #0052d9;
+  font-weight: 500;
+}
+
+.upload-hint {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* 图片预览 */
+.preview-section {
+  margin-bottom: 30rpx;
+}
+
+.image-container {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 20rpx;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 12rpx;
+}
+
+.image-label {
+  text-align: center;
+  font-size: 26rpx;
+  color: #666;
+  margin-top: 16rpx;
+}
+
+/* 信息提示 */
+.info-section {
+  margin-bottom: 30rpx;
+}
+
+.warning-box {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background-color: #fff3f3;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.warning-text {
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  color: #e34d59;
+  font-weight: 500;
+}
+
+.safe-box {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background-color: #e8f8f2;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.safe-text {
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  color: #00a870;
+  font-weight: 500;
+}
+
+/* EXIF 信息列表 */
+.exif-list {
+  background-color: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.exif-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.exif-item:last-child {
+  border-bottom: none;
+}
+
+.exif-item.has-value {
+  background-color: #fffbfb;
+}
+
+.exif-icon {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 16rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.exif-item.has-value .exif-icon {
+  background-color: #ffebee;
+}
+
+.exif-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.exif-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+
+.exif-value {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.exif-value.danger {
+  color: #e34d59;
+}
+
+.exif-status {
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+/* 操作按钮 */
+.action-section {
+  margin-bottom: 30rpx;
+}
+
+/* 处理结果 */
+.result-section {
+  margin-bottom: 30rpx;
+}
+
+.success-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx;
+  background-color: #e8f8f2;
+  border-radius: 16rpx;
+  margin-bottom: 30rpx;
+}
+
+.success-text {
+  margin-left: 16rpx;
+  font-size: 32rpx;
+  color: #00a870;
+  font-weight: 500;
+}
+
+.compare-images {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.compare-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.compare-image {
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 12rpx;
+  border: 2rpx solid #eee;
+}
+
+.compare-label {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.compare-tag {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.compare-tag.danger {
+  background-color: #e34d59;
+  color: #fff;
+}
+
+.compare-tag.safe {
+  background-color: #00a870;
+  color: #fff;
+}
+
+.compare-arrow {
+  padding: 0 20rpx;
+}
+
+.result-actions {
+  margin-top: 30rpx;
+}
+
+/* 说明信息 */
+.tips-section {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+}
+
+.tips-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.tips-content {
+  color: #666;
+}
+
+.tips-item {
+  font-size: 26rpx;
+  line-height: 2;
+}

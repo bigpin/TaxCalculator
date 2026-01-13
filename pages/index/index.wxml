@@ -1,0 +1,63 @@
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="header">
+    <view class="header-title">日常万能助手</view>
+    <view class="header-subtitle">便捷工具，触手可及</view>
+  </view>
+
+  <!-- 分类筛选 -->
+  <view class="category-filter">
+    <view 
+      class="category-item {{currentCategory === '' ? 'active' : ''}}"
+      data-category=""
+      bindtap="onCategoryChange"
+    >
+      全部
+    </view>
+    <view 
+      wx:for="{{categories}}" 
+      wx:key="*this"
+      class="category-item {{currentCategory === item ? 'active' : ''}}"
+      data-category="{{item}}"
+      bindtap="onCategoryChange"
+    >
+      {{categoryNames[item]}}
+    </view>
+  </view>
+
+  <!-- 工具列表 -->
+  <view class="tools-list">
+    <view 
+      wx:for="{{filteredTools}}" 
+      wx:key="id"
+      class="tool-card"
+      data-tool="{{item}}"
+      bindtap="onToolTap"
+    >
+      <view class="tool-icon">
+        <t-icon name="{{item.icon}}" size="48rpx" color="#0052d9" />
+      </view>
+      <view class="tool-info">
+        <view class="tool-name">{{item.name}}</view>
+        <view class="tool-desc">{{item.description}}</view>
+        <view class="tool-category">
+          <t-tag theme="primary" variant="light" size="small">{{categoryNames[item.category]}}</t-tag>
+        </view>
+      </view>
+      <view class="tool-arrow">
+        <t-icon name="chevron-right" size="40rpx" color="#bbb" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{filteredTools.length === 0}}" class="empty-state">
+    <t-icon name="inbox" size="120rpx" color="#ccc" />
+    <text class="empty-text">暂无工具</text>
+  </view>
+
+  <!-- 底部版权 -->
+  <view class="footer">
+    <text>日常万能助手 v1.0</text>
+  </view>
+</view>

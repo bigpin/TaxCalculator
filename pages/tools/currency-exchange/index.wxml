@@ -1,0 +1,14 @@
+<view class="container">
+  <view class="form-section">
+    <view class="title">汇率查询</view>
+    <area id="exchangeSetting" bind:exchange="exchangeChanged" />
+  </view>
+
+  <group-btn first="AB调换" second="查询" bind:tap="onTap" />
+
+  <view class="result-section" wx:if="{{resultText}}">
+    <output id="exchangeInfo" label="汇率结果:" />
+  </view>
+
+  <t-loading wx:if="{{loading}}" theme="dots" size="40rpx" text="加载中..." />
+</view>

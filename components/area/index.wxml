@@ -1,0 +1,16 @@
+<t-cell class="mb-16" title="选择币种" arrow hover note="{{dateText}}" bind:click="onAreaPicker" />
+
+<t-picker
+  visible="{{dateVisible}}"
+  value="{{dateValue}}"
+  data-key="date"
+  title="选择币种"
+  cancelBtn="取消"
+  confirmBtn="确认"
+  bindchange="onPickerChange"
+  bindpick="onColumnChange"
+  bindcancel="onPickerCancel"
+>
+  <t-picker-item options="{{code}}"></t-picker-item>
+  <t-picker-item options="{{code}}"></t-picker-item>
+</t-picker>

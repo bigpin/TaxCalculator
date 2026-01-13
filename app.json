@@ -1,26 +1,18 @@
 {
     "pages": [
-        "pages/home/home",
-        "pages/home/navigateFail/navigateFail",
+        "pages/index/index",
+        "pages/tools/tax-calculator/index",
+        "pages/tools/pension-calculator/index",
+        "pages/tools/currency-exchange/index",
+        "pages/tools/photo-privacy/index",
         "pages/detail/detail"
     ],
-    "lazyCodeLoading": "requiredComponents",
-    "usingComponents": {
-        "t-demo": "./components/demo-block/index",
-        "t-button": "tdesign-miniprogram/button/button",
-        "t-icon": "tdesign-miniprogram/icon/icon"
-    },
     "window": {
         "backgroundTextStyle": "light",
-        "navigationBarBackgroundColor": "#f6f6f6",
-        "backgroundColor": "#f6f6f6",
-        "navigationBarTitleText": "个税信息",
-        "navigationBarTextStyle": "black"
+        "navigationBarBackgroundColor": "#0052d9",
+        "backgroundColor": "#f5f5f5",
+        "navigationBarTitleText": "日常万能助手",
+        "navigationBarTextStyle": "white"
     },
-    "sitemapLocation": "sitemap.json",
-    "permission": {
-        "network": {
-          "desc": "用于加载网络数据"
-        }
-      }
+    "sitemapLocation": "sitemap.json"
 }

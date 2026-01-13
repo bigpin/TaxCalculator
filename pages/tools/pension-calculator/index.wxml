@@ -1,0 +1,24 @@
+<view class="container">
+  <view class="form-section">
+    <text class="title">年终奖金额：</text>
+    <view class="input-group">
+      <t-input
+        id="salary"
+        label="奖金总额"
+        placeholder="50000"
+        suffix="元"
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{salaryErr ? '请输入正确数字' : ''}}"
+        t-class-tips="tips"
+      />
+    </view>
+  </view>
+
+  <group-btn first="恢复默认值" second="计算" bind:tap="onTap" />
+
+  <view class="result-section" wx:if="{{result}}">
+    <output id="taxInfo" label="计算结果:" />
+  </view>
+</view>

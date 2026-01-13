@@ -1,0 +1,139 @@
+<view class="container">
+  <!-- 隐藏的Canvas用于处理图片 -->
+  <canvas 
+    type="2d" 
+    id="canvas" 
+    style="position: fixed; left: -9999px; width: 1px; height: 1px;"
+  ></canvas>
+
+  <!-- 选择图片区域 -->
+  <view class="upload-section" wx:if="{{!imagePath}}">
+    <view class="upload-box" bindtap="chooseImage">
+      <t-icon name="add" size="80rpx" color="#0052d9" />
+      <text class="upload-text">选择图片</text>
+      <text class="upload-hint">支持JPG、PNG格式</text>
+    </view>
+  </view>
+
+  <!-- 图片预览 -->
+  <view class="preview-section" wx:if="{{imagePath}}">
+    <view class="image-container" bindtap="previewOriginal">
+      <image class="preview-image" src="{{imagePath}}" mode="aspectFit" />
+      <view class="image-label">原图（点击预览）</view>
+    </view>
+  </view>
+
+  <!-- EXIF 信息展示 -->
+  <view class="info-section" wx:if="{{exifItems.length > 0}}">
+    <!-- 警告提示 -->
+    <view class="warning-box" wx:if="{{hasPrivacyInfo}}">
+      <t-icon name="error-circle" size="40rpx" color="#e34d59" />
+      <text class="warning-text">检测到以下隐私信息：</text>
+    </view>
+    <view class="safe-box" wx:else>
+      <t-icon name="check-circle" size="40rpx" color="#00a870" />
+      <text class="safe-text">未检测到敏感隐私信息</text>
+    </view>
+    
+    <!-- EXIF 信息列表 -->
+    <view class="exif-list">
+      <view 
+        class="exif-item {{item.hasValue && item.type !== 'size' ? 'has-value' : ''}}" 
+        wx:for="{{exifItems}}" 
+        wx:key="label"
+      >
+        <view class="exif-icon">
+          <t-icon name="{{item.icon}}" size="44rpx" color="{{item.hasValue && item.type !== 'size' ? '#e34d59' : '#999'}}" />
+        </view>
+        <view class="exif-content">
+          <view class="exif-label">{{item.label}}</view>
+          <view class="exif-value {{item.hasValue && item.type !== 'size' ? 'danger' : ''}}">{{item.value}}</view>
+        </view>
+        <view class="exif-status" wx:if="{{item.hasValue && item.type !== 'size'}}">
+          <t-icon name="error-circle-filled" size="36rpx" color="#e34d59" />
+        </view>
+        <view class="exif-status" wx:elif="{{item.type !== 'size'}}">
+          <t-icon name="check-circle-filled" size="36rpx" color="#00a870" />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-section" wx:if="{{imagePath && !showResult}}">
+    <t-button 
+      theme="primary" 
+      size="large" 
+      block 
+      loading="{{processing}}"
+      bindtap="removeExif"
+    >
+      {{processing ? '处理中...' : '清除隐私信息'}}
+    </t-button>
+    <t-button 
+      theme="light" 
+      size="large" 
+      block 
+      style="margin-top: 20rpx;"
+      bindtap="reset"
+    >
+      重新选择
+    </t-button>
+  </view>
+
+  <!-- 处理结果 -->
+  <view class="result-section" wx:if="{{showResult}}">
+    <view class="success-box">
+      <t-icon name="check-circle" size="60rpx" color="#00a870" />
+      <text class="success-text">隐私信息已清除！</text>
+    </view>
+
+    <view class="compare-images">
+      <view class="compare-item" bindtap="previewOriginal">
+        <image class="compare-image" src="{{imagePath}}" mode="aspectFit" />
+        <text class="compare-label">原图</text>
+        <view class="compare-tag danger">含隐私</view>
+      </view>
+      <view class="compare-arrow">
+        <t-icon name="arrow-right" size="48rpx" color="#0052d9" />
+      </view>
+      <view class="compare-item" bindtap="previewProcessed">
+        <image class="compare-image" src="{{processedPath}}" mode="aspectFit" />
+        <text class="compare-label">已处理</text>
+        <view class="compare-tag safe">安全</view>
+      </view>
+    </view>
+
+    <view class="result-actions">
+      <t-button 
+        theme="primary" 
+        size="large" 
+        block 
+        bindtap="saveImage"
+      >
+        保存到相册
+      </t-button>
+      <t-button 
+        theme="light" 
+        size="large" 
+        block 
+        style="margin-top: 20rpx;"
+        bindtap="reset"
+      >
+        处理其他图片
+      </t-button>
+    </view>
+  </view>
+
+  <!-- 说明信息 -->
+  <view class="tips-section">
+    <view class="tips-title">功能说明</view>
+    <view class="tips-content">
+      <view class="tips-item">• 自动读取并显示图片中的隐私信息</view>
+      <view class="tips-item">• 去除照片中的GPS位置信息</view>
+      <view class="tips-item">• 去除拍摄时间和日期信息</view>
+      <view class="tips-item">• 去除设备型号等隐私信息</view>
+      <view class="tips-item">• 处理后的图片可安全分享</view>
+    </view>
+  </view>
+</view>

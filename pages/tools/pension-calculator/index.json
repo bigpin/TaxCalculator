@@ -1,0 +1,13 @@
+{
+  "navigationBarTitleText": "养老金计算器",
+  "navigationBarBackgroundColor": "#f6f6f6",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#f6f6f6",
+  "usingComponents": {
+    "t-input": "tdesign-miniprogram/input/input",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-textarea": "tdesign-miniprogram/textarea/textarea",
+    "group-btn": "/components/group-btn/index",
+    "output": "/components/output/index"
+  }
+}

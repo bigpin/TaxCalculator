@@ -1,0 +1,3 @@
+.external-class {
+  min-height: 200rpx;
+}

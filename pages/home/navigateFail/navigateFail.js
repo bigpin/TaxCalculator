@@ -4,7 +4,7 @@ Page({
     },
     toHome() {
         wx.reLaunch({
-            url: '/pages/home/home',
+            url: '/pages/index/index',
         });
     },
 });

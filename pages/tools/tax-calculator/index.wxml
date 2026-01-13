@@ -1,0 +1,87 @@
+<view class="container">
+  <view class="form-section">
+    <text class="title">税率信息：</text>
+    <view class="input-group">
+      <t-input
+        id="salary"
+        label="月工资"
+        placeholder="50000"
+        suffix="元"
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{salaryErr ? '请输入正确数字' : ''}}"
+        t-class-tips="tips"
+      />
+      <t-input
+        id="old"
+        label="养老"
+        placeholder="8"
+        suffix="%"
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{oldErr ? '请输入正确的税率' : ''}}"
+        t-class-tips="tips"
+      />
+      <t-input
+        id="lost"
+        label="失业"
+        placeholder="0.5"
+        suffix="%"
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{lostErr ? '请输入正确的税率' : ''}}"
+        t-class-tips="tips"
+      />
+      <t-input
+        id="medical"
+        label="医疗"
+        placeholder="2"
+        suffix="% + 3元"
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{medicalErr ? '请输入正确的税率' : ''}}"
+        t-class-tips="tips"
+      />
+      <t-input
+        id="HousingProvidentFund"
+        label="住房公积金"
+        placeholder="12"
+        suffix="%"
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{housingProvidentFundErr ? '请输入正确的税率' : ''}}"
+        t-class-tips="tips"
+      />
+      <t-input
+        id="attach"
+        label="专项附加扣除"
+        placeholder="6000"
+        suffix=""
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{attchErr ? '请输入正确的税率' : ''}}"
+        t-class-tips="tips"
+      />
+    </view>
+  </view>
+
+  <group-btn first="恢复默认值" second="计算" bind:tap="onTap" />
+
+  <view class="result-section" wx:if="{{resultList.length > 0}}">
+    <view class="result-title">计算结果</view>
+    <pull-down-list 
+      id='taxInfoList' 
+      name="个税结果" 
+      icon="chat" 
+      defaultOpen="true" 
+      childArr="{{resultList}}" 
+      bind:click="clickHandle" 
+    />
+  </view>
+</view>

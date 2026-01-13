@@ -1,5 +1,8 @@
 {
+    "navigationBarTitleText": "详情",
+    "navigationBarBackgroundColor": "#0052d9",
+    "navigationBarTextStyle": "white",
     "usingComponents": {
-        "output": "../home/output/output"
+        "output": "/components/output/index"
     }
 }

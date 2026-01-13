@@ -22,6 +22,8 @@ App({
     globalData: {
         currentTaxInfo: "", 
         apiKey: 'your-api-key',
-        // ...
+        // 工具管理相关数据
+        tools: [],
+        currentTool: null,
       },
 });

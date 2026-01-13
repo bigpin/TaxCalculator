@@ -1,65 +1,32 @@
 // pages/detail.js
 Page({
-
-    /**
-     * 页面的初始数据
-     */
     data: {
-
+        detailText: '',
+        monthIndex: 0
     },
 
-    /**
-     * 生命周期函数--监听页面加载
-     */
     onLoad(options) {
-        this.selectComponent('#taxInfo').updateTax(getApp().globalData.currentTaxInfo);
+        this.setData({
+            monthIndex: options.index ? parseInt(options.index) : 0
+        });
     },
 
-    /**
-     * 生命周期函数--监听页面初次渲染完成
-     */
     onReady() {
-    },
-
-    /**
-     * 生命周期函数--监听页面显示
-     */
-    onShow() {
-
-    },
-
-    /**
-     * 生命周期函数--监听页面隐藏
-     */
-    onHide() {
-
-    },
-
-    /**
-     * 生命周期函数--监听页面卸载
-     */
-    onUnload() {
-
-    },
-
-    /**
-     * 页面相关事件处理函数--监听用户下拉动作
-     */
-    onPullDownRefresh() {
-
-    },
-
-    /**
-     * 页面上拉触底事件的处理函数
-     */
-    onReachBottom() {
-
-    },
-
-    /**
-     * 用户点击右上角分享
-     */
-    onShareAppMessage() {
-
+        const taxInfo = getApp().globalData.currentTaxInfo;
+        const index = this.data.monthIndex;
+        
+        if (taxInfo && taxInfo.length > 0 && taxInfo[index]) {
+            const detailInfo = taxInfo[index];
+            const output = this.selectComponent('#taxInfo');
+            if (output) {
+                const text = `第${index + 1}月详情\n\n实际入账：${detailInfo.salary.toFixed(2)}元\n养老保险：${detailInfo.old.toFixed(2)}元\n失业保险：${detailInfo.lost.toFixed(2)}元\n医疗保险：${detailInfo.medical.toFixed(2)}元\n住房公积金：${detailInfo.house.toFixed(2)}元\n累积缴个税：${detailInfo.tax.toFixed(2)}元`;
+                output.updateText(text);
+            }
+        } else {
+            const output = this.selectComponent('#taxInfo');
+            if (output) {
+                output.updateText('暂无数据，请先在个税计算器中进行计算');
+            }
+        }
     }
-})
+});

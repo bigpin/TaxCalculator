@@ -1,2 +1,3 @@
-<!--pages/detail.wxml-->
-<output id="taxInfo"/>
+<view class="container">
+  <output id="taxInfo" label="税务详情:" placeholder="加载中..." />
+</view>

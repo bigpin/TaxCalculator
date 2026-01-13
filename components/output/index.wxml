@@ -1,0 +1,8 @@
+<t-textarea
+  t-class="external-class"
+  label="{{label}}"
+  placeholder="{{placeholder}}"
+  value="{{value}}"
+  disableDefaultPadding="{{true}}"
+  autosize
+/>

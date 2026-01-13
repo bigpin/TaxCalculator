@@ -1,0 +1,13 @@
+{
+  "navigationBarTitleText": "个税计算器",
+  "navigationBarBackgroundColor": "#f6f6f6",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#f6f6f6",
+  "usingComponents": {
+    "t-input": "tdesign-miniprogram/input/input",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "pull-down-list": "/components/pull-down-list/index",
+    "group-btn": "/components/group-btn/index"
+  }
+}

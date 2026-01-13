@@ -22,7 +22,7 @@ Page({
 
         try {
             const exchangeData = await this.getExchangeRate(from_code, to_code, key);
-            const displayText = this.formatExchangeText(exchangeData);
+            const displayText = this.formatExchangeText(exchangeData, from_code, to_code);
             targetComponent.updateText(displayText);
         } catch (error) {
             targetComponent.updateText(`获取汇率信息失败：${error.message}`);
@@ -72,9 +72,9 @@ Page({
         this.setData({ exchangeCache });
     },
 
-    formatExchangeText(exchangeData) {
+    formatExchangeText(exchangeData, from_code, to_code) {
         const { currencyF_Name, currencyT_Name, exchange, updateTime } = exchangeData[0];
-        return `1${currencyF_Name}${from_code}兑换${exchange}${currencyT_Name}${to_code}\n${updateTime}`;
+        return `1${currencyF_Name}(${from_code})兑换${exchange}${currencyT_Name}(${to_code})\n${updateTime}`;
     },
 
     // 税收计算相关方法
