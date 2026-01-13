@@ -19,18 +19,25 @@ Component({
      * 组件的方法列表
      */
     methods: {
-        updateText(value, add=false) {
+        getComponent() {
             const com = this.selectComponent("#o");
-            console.log(value)
-            if (add) {
-                com.updateValue(com.data.value + value);
-            } else {
-                com.updateValue(value);
+            if (!com) {
+                console.error(`Component with ID '#o' not found`);
+            }
+            return com;
+        },
+        updateText(value, add=false) {
+            const com = this.getComponent();
+            if (com) {
+                const newValue = add ? com.data.value + value : value;
+                com.updateValue(newValue);
             }
         },
         clearText() {
-            const com = this.selectComponent("#o");
-            com.updateValue("");
+            const com = this.getComponent();
+            if (com) {
+                com.updateValue("");
+            }
         }
     }
 })
