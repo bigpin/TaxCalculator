@@ -5,6 +5,7 @@
         "pages/tools/pension-calculator/index",
         "pages/tools/currency-exchange/index",
         "pages/tools/photo-privacy/index",
+        "pages/tools/unit-converter/index",
         "pages/detail/detail"
     ],
     "window": {

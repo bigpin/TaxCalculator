@@ -19,7 +19,15 @@ Page({
     },
 
     onLoad() {
-        // 初始化输入组件
+        // 组件引用将在 ready 中初始化
+    },
+
+    onReady() {
+        // 在组件渲染完成后初始化引用
+        this.initInputRefs();
+    },
+
+    initInputRefs() {
         this.salaryInput = this.selectComponent('#salary');
         this.oldInput = this.selectComponent('#old');
         this.lostInput = this.selectComponent('#lost');
@@ -69,14 +77,27 @@ Page({
         });
     },
 
+    // 获取输入值的辅助方法
+    getInputValue(component, defaultValue) {
+        if (component && component.data && component.data.value) {
+            return component.data.value;
+        }
+        return defaultValue;
+    },
+
     // 计算
     calculate() {
-        const monthlySalary = (this.salaryInput.data.value ? this.salaryInput.data.value : this.data.salary);
-        const old = (this.oldInput.data.value ? this.oldInput.data.value : this.data.old) / 100.0;
-        const lost = (this.lostInput.data.value ? this.lostInput.data.value : this.data.lost) / 100.0;
-        const medical = (this.medicalInput.data.value ? this.medicalInput.data.value : this.data.medical) / 100.0;
-        const hpf = (this.housingProvidentFundInput.data.value ? this.housingProvidentFundInput.data.value : this.data.housingProvidentFund) / 100.0;
-        const attch = (this.attchInput.data.value ? this.attchInput.data.value : this.data.attch);
+        // 确保组件引用已初始化
+        if (!this.salaryInput) {
+            this.initInputRefs();
+        }
+        
+        const monthlySalary = this.getInputValue(this.salaryInput, this.data.salary);
+        const old = this.getInputValue(this.oldInput, this.data.old) / 100.0;
+        const lost = this.getInputValue(this.lostInput, this.data.lost) / 100.0;
+        const medical = this.getInputValue(this.medicalInput, this.data.medical) / 100.0;
+        const hpf = this.getInputValue(this.housingProvidentFundInput, this.data.housingProvidentFund) / 100.0;
+        const attch = this.getInputValue(this.attchInput, this.data.attch);
 
         const monthlyNetSalaryArray = this.calculateMonthlyNetSalary(monthlySalary, old, lost, medical, hpf, attch);
         

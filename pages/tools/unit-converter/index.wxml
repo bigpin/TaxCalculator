@@ -1,0 +1,94 @@
+<view class="container">
+  <view class="form-section">
+    <view class="title">单位类型</view>
+    <t-cell 
+      title="选择单位类型" 
+      arrow 
+      hover 
+      note="{{unitTypes[currentUnitType]}}" 
+      bind:click="onUnitTypePicker" 
+    />
+    <t-picker
+      visible="{{unitTypeVisible}}"
+      value="{{[currentUnitType]}}"
+      data-key="unitType"
+      title="选择单位类型"
+      cancelBtn="取消"
+      confirmBtn="确认"
+      bindchange="onUnitTypePickerChange"
+      bindcancel="onPickerCancel"
+    >
+      <t-picker-item options="{{unitTypeOptions}}"></t-picker-item>
+    </t-picker>
+  </view>
+
+  <view class="form-section">
+    <view class="title">单位选择</view>
+    
+    <t-cell 
+      class="mb-16" 
+      title="源单位" 
+      arrow 
+      hover 
+      note="{{currentUnits[fromUnitIndex] ? currentUnits[fromUnitIndex].label : ''}}" 
+      bind:click="onFromUnitPicker" 
+    />
+
+    <t-picker
+      visible="{{fromUnitVisible}}"
+      value="{{currentUnits[fromUnitIndex] ? [currentUnits[fromUnitIndex].value] : []}}"
+      data-key="fromUnit"
+      title="选择源单位"
+      cancelBtn="取消"
+      confirmBtn="确认"
+      bindchange="onFromUnitChange"
+      bindcancel="onPickerCancel"
+    >
+      <t-picker-item options="{{currentUnits}}"></t-picker-item>
+    </t-picker>
+
+    <t-cell 
+      class="mb-16" 
+      title="目标单位" 
+      arrow 
+      hover 
+      note="{{currentUnits[toUnitIndex] ? currentUnits[toUnitIndex].label : ''}}" 
+      bind:click="onToUnitPicker" 
+    />
+
+    <t-picker
+      visible="{{toUnitVisible}}"
+      value="{{currentUnits[toUnitIndex] ? [currentUnits[toUnitIndex].value] : []}}"
+      data-key="toUnit"
+      title="选择目标单位"
+      cancelBtn="取消"
+      confirmBtn="确认"
+      bindchange="onToUnitChange"
+      bindcancel="onPickerCancel"
+    >
+      <t-picker-item options="{{currentUnits}}"></t-picker-item>
+    </t-picker>
+  </view>
+
+  <view class="form-section">
+    <view class="title">输入数值</view>
+    <t-input
+      id="fromInput"
+      label="源值"
+      placeholder="请输入数值"
+      suffix="{{currentUnits[fromUnitIndex] ? currentUnits[fromUnitIndex].label : ''}}"
+      align="right"
+      type="digit"
+      value="{{fromValue}}"
+      bindchange="onInputChange"
+      tips="{{inputError ? '请输入有效数字' : ''}}"
+      t-class-tips="tips"
+    />
+  </view>
+
+  <group-btn first="重置" second="调换" bind:tap="onTap" />
+
+  <view class="result-section" wx:if="{{toValue}}">
+    <output id="resultOutput" label="转换结果:" />
+  </view>
+</view>

@@ -1,8 +1,25 @@
 <view class="container">
   <!-- 顶部标题 -->
   <view class="header">
-    <view class="header-title">日常万能助手</view>
-    <view class="header-subtitle">便捷工具，触手可及</view>
+    <view class="header-row">
+      <view class="header-text">
+        <view class="header-title">日常万能助手</view>
+        <view class="header-subtitle">便捷工具，触手可及</view>
+      </view>
+      <view class="search-icon" bindtap="toggleSearch">
+        <t-icon name="search" size="48rpx" color="#fff" />
+      </view>
+    </view>
+    <!-- 搜索框 -->
+    <view class="search-box {{showSearch ? 'show' : ''}}">
+      <t-search
+        placeholder="搜索工具..."
+        value="{{searchValue}}"
+        bind:change="onSearchChange"
+        bind:clear="onSearchClear"
+        shape="round"
+      />
+    </view>
   </view>
 
   <!-- 分类筛选 -->
@@ -31,7 +48,7 @@
       wx:for="{{filteredTools}}" 
       wx:key="id"
       class="tool-card"
-      data-tool="{{item}}"
+      data-index="{{index}}"
       bindtap="onToolTap"
     >
       <view class="tool-icon">

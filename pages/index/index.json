@@ -5,6 +5,7 @@
   "backgroundColor": "#f5f5f5",
   "usingComponents": {
     "t-icon": "tdesign-miniprogram/icon/icon",
-    "t-tag": "tdesign-miniprogram/tag/tag"
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-search": "tdesign-miniprogram/search/search"
   }
 }
