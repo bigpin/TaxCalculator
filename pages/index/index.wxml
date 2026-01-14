@@ -3,7 +3,7 @@
   <view class="header">
     <view class="header-row">
       <view class="header-text">
-        <view class="header-title">日常万能助手</view>
+        <view class="header-title">AI工具箱精选版</view>
         <view class="header-subtitle">便捷工具，触手可及</view>
       </view>
       <view class="search-icon" bindtap="toggleSearch">
@@ -75,6 +75,6 @@
 
   <!-- 底部版权 -->
   <view class="footer">
-    <text>日常万能助手 v1.0</text>
+    <text>AI工具箱精选版 v1.0</text>
   </view>
 </view>
