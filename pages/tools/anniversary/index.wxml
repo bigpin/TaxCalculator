@@ -1,0 +1,88 @@
+<view class="container">
+  <!-- 空状态 -->
+  <view wx:if="{{anniversaryList.length === 0}}" class="empty-state">
+    <t-icon name="calendar" size="120rpx" color="#ccc" />
+    <text class="empty-text">还没有纪念日</text>
+    <text class="empty-desc">点击右下角按钮添加第一个纪念日</text>
+  </view>
+
+  <!-- 纪念日列表 -->
+  <view wx:else class="anniversary-list">
+    <view 
+      wx:for="{{anniversaryList}}" 
+      wx:key="id"
+      class="anniversary-card"
+      bindtap="onCardTap"
+      data-item="{{item}}"
+    >
+      <view class="card-header">
+        <view class="card-title">{{item.name}}</view>
+        <t-tag 
+          theme="{{item.typeTheme}}" 
+          variant="light" 
+          size="small"
+        >
+          {{item.typeName}}
+        </t-tag>
+      </view>
+      
+      <view class="card-content">
+        <view class="date-info">
+          <t-icon name="calendar" size="32rpx" color="#666" />
+          <text class="date-text">{{item.displayDate}}</text>
+        </view>
+        
+        <view class="days-info {{item.isToday ? 'today' : ''}} {{item.isPast ? 'past' : 'future'}}">
+          <text class="days-text">{{item.daysText}}</text>
+        </view>
+      </view>
+      
+      <view wx:if="{{item.note}}" class="card-note">
+        <text class="note-text">{{item.note}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="fab-button" bindtap="onAddClick">
+    <t-icon name="add" size="48rpx" color="#fff" />
+  </view>
+
+  <!-- 测试按钮（开发调试用，正式版可删除） -->
+  <view class="test-button" bindtap="testNotification" wx:if="{{showTestButton}}">
+    <t-icon name="notification" size="32rpx" color="#0052d9" />
+    <text class="test-text">测试推送</text>
+  </view>
+
+  <!-- 编辑/删除弹窗 -->
+  <t-popup
+    visible="{{showActionSheet}}"
+    placement="bottom"
+    bind:visible-change="onActionSheetChange"
+  >
+    <view class="action-sheet">
+      <view class="action-item" bindtap="onEditClick">
+        <t-icon name="edit" size="40rpx" color="#0052d9" />
+        <text>编辑</text>
+      </view>
+      <view class="action-item danger" bindtap="onDeleteClick">
+        <t-icon name="delete" size="40rpx" color="#ff4444" />
+        <text>删除</text>
+      </view>
+      <view class="action-item cancel" bindtap="onCancelAction">
+        <text>取消</text>
+      </view>
+    </view>
+  </t-popup>
+
+  <!-- 删除确认对话框 -->
+  <t-dialog
+    visible="{{showDeleteDialog}}"
+    title="确认删除"
+    content="确定要删除这个纪念日吗？"
+    confirm-btn="删除"
+    cancel-btn="取消"
+    bind:confirm="confirmDelete"
+    bind:cancel="cancelDelete"
+  />
+</view>

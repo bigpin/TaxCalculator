@@ -1,0 +1,17 @@
+{
+  "navigationBarTitleText": "纪念日管家",
+  "navigationBarBackgroundColor": "#0052d9",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f5f5f5",
+  "usingComponents": {
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-popup": "tdesign-miniprogram/popup/popup",
+    "t-input": "tdesign-miniprogram/input/input",
+    "t-picker": "tdesign-miniprogram/picker/picker",
+    "t-picker-item": "tdesign-miniprogram/picker-item/picker-item",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-cell": "tdesign-miniprogram/cell/cell",
+    "t-dialog": "tdesign-miniprogram/dialog/dialog"
+  }
+}

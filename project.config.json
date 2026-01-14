@@ -1,5 +1,6 @@
 {
     "description": "项目配置文件",
+    "cloudfunctionRoot": "cloud/",
     "setting": {
         "urlCheck": false,
         "scopeDataCheck": false,
@@ -53,5 +54,6 @@
         "ignore": [],
         "include": []
     },
-    "projectArchitecture": "multiPlatform"
+    "projectArchitecture": "multiPlatform",
+    "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
 }

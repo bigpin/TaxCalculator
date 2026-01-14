@@ -57,6 +57,14 @@ const TOOLS = [
         category: 'life',
         description: '支持长度、面积、体积、重量、温度、时间、速度等常用单位互转',
         path: '/pages/tools/unit-converter/index'
+    },
+    {
+        id: 'anniversary',
+        name: '纪念日管家',
+        icon: 'calendar',
+        category: 'life',
+        description: '记录生日、纪念日、还款日等重要日期，自动计算倒计时，支持订阅消息提醒',
+        path: '/pages/tools/anniversary/index'
     }
 ];
 

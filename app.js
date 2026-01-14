@@ -1,7 +1,13 @@
 import gulpError from './utils/gulpError';
 App({
     onLaunch(options) {
-        // Do something initial when launch.
+        // 初始化云开发（如果已配置）
+        if (typeof wx.cloud !== 'undefined') {
+            wx.cloud.init({
+                env: 'cloudbase-4g6zx8vx290da64e', // 云开发环境ID
+                traceUser: true
+            });
+        }
     },
     onShow(options) {
         console.log(options);

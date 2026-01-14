@@ -6,6 +6,8 @@
         "pages/tools/currency-exchange/index",
         "pages/tools/photo-privacy/index",
         "pages/tools/unit-converter/index",
+        "pages/tools/anniversary/index",
+        "pages/tools/anniversary/add",
         "pages/detail/detail"
     ],
     "window": {
