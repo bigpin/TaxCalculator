@@ -36,6 +36,12 @@
           <text class="days-text">{{item.daysText}}</text>
         </view>
       </view>
+
+      <!-- 提醒设置 -->
+      <view wx:if="{{item.remindText}}" class="remind-info">
+        <t-icon name="notification" size="28rpx" color="#999" />
+        <text class="remind-text">{{item.remindText}}</text>
+      </view>
       
       <view wx:if="{{item.note}}" class="card-note">
         <text class="note-text">{{item.note}}</text>

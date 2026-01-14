@@ -29,6 +29,54 @@ page {
   color: #ff4444 !important;
 }
 
+/* 提醒设置样式 */
+.remind-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.remind-option {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  border: 2rpx solid #e0e0e0;
+  transition: all 0.2s;
+}
+
+.remind-option.active {
+  background: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.remind-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 6rpx;
+  background: #e0e0e0;
+  margin-right: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remind-option.active .remind-checkbox {
+  background: #1890ff;
+}
+
+.remind-label {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.remind-tip {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 16rpx;
+}
+
 .button-group {
   padding: 30rpx;
   margin-top: 40rpx;

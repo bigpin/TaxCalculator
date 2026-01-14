@@ -107,6 +107,22 @@ page {
   font-size: 28rpx;
 }
 
+/* 提醒设置 */
+.remind-info {
+  display: flex;
+  align-items: center;
+  margin-top: 12rpx;
+  padding: 8rpx 16rpx;
+  background-color: #f8f8f8;
+  border-radius: 8rpx;
+}
+
+.remind-text {
+  margin-left: 8rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
 .card-note {
   margin-top: 16rpx;
   padding-top: 16rpx;

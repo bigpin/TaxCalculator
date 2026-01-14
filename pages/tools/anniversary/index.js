@@ -10,18 +10,21 @@ const TYPE_CONFIG = {
   custom: { name: '自定义', theme: 'default' }
 };
 
+// 获取云数据库引用
+const db = wx.cloud.database();
+
 Page({
   data: {
     anniversaryList: [],
     showActionSheet: false,
     showDeleteDialog: false,
     currentItem: null, // 当前选中的纪念日
-    showTestButton: true // 是否显示测试按钮（开发调试用）
+    showTestButton: true, // 是否显示测试按钮（开发调试用）
+    loading: false
   },
 
   onLoad() {
     this.loadAnniversaryList();
-    this.checkAndSendNotification();
   },
 
   onShow() {
@@ -30,17 +33,42 @@ Page({
   },
 
   /**
-   * 从本地存储加载纪念日列表
+   * 从云端加载纪念日列表，同步到本地缓存
    */
-  loadAnniversaryList() {
+  async loadAnniversaryList() {
+    this.setData({ loading: true });
+    
     try {
-      const list = wx.getStorageSync('anniversaryList') || [];
+      // 优先从云端加载
+      let list = [];
+      try {
+        const res = await db.collection('anniversary')
+          .orderBy('createdAt', 'desc')
+          .get();
+        list = res.data || [];
+        
+        // 同步到本地缓存
+        const localList = list.map(item => ({
+          ...item,
+          id: item._id // 兼容旧字段
+        }));
+        wx.setStorageSync('anniversaryList', localList);
+        
+        console.log('从云端加载成功，共', list.length, '条记录');
+      } catch (cloudErr) {
+        console.log('云端加载失败，使用本地缓存:', cloudErr);
+        // 云端失败，使用本地缓存
+        list = wx.getStorageSync('anniversaryList') || [];
+      }
+      
       const processedList = this.processAnniversaryList(list);
       this.setData({
-        anniversaryList: processedList
+        anniversaryList: processedList,
+        loading: false
       });
     } catch (error) {
       console.error('加载纪念日列表失败:', error);
+      this.setData({ loading: false });
       wx.showToast({
         title: '加载失败',
         icon: 'none'
@@ -67,6 +95,17 @@ Page({
         daysText = `还有 ${result.days} 天`;
       }
 
+      // 生成提醒设置文本
+      const remindDays = item.remindDays || [7, 3, 1];
+      let remindText = '';
+      if (remindDays.length > 0) {
+        const remindLabels = remindDays.map(d => {
+          if (d === 0) return '当天';
+          return `${d}天前`;
+        });
+        remindText = remindLabels.join('、') + '提醒';
+      }
+
       return {
         ...item,
         days: result.days,
@@ -75,7 +114,8 @@ Page({
         daysText: daysText,
         displayDate: dateUtils.getFriendlyDateText(item.date),
         typeName: typeConfig.name,
-        typeTheme: typeConfig.theme
+        typeTheme: typeConfig.theme,
+        remindText: remindText
       };
     });
 
@@ -129,8 +169,10 @@ Page({
     });
     
     if (this.data.currentItem) {
+      // 使用云端ID
+      const id = this.data.currentItem._id || this.data.currentItem.id;
       wx.navigateTo({
-        url: `/pages/tools/anniversary/add?id=${this.data.currentItem.id}`
+        url: `/pages/tools/anniversary/add?id=${id}`
       });
     }
     
@@ -150,15 +192,27 @@ Page({
   /**
    * 确认删除
    */
-  confirmDelete() {
+  async confirmDelete() {
     if (!this.data.currentItem) {
       this.setData({ showDeleteDialog: false });
       return;
     }
 
+    const item = this.data.currentItem;
+    const cloudId = item._id || item.id;
+
     try {
+      // 删除云端数据
+      try {
+        await db.collection('anniversary').doc(cloudId).remove();
+        console.log('云端删除成功');
+      } catch (cloudErr) {
+        console.log('云端删除失败:', cloudErr);
+      }
+
+      // 删除本地数据
       const list = wx.getStorageSync('anniversaryList') || [];
-      const newList = list.filter(item => item.id !== this.data.currentItem.id);
+      const newList = list.filter(i => i._id !== cloudId && i.id !== cloudId);
       wx.setStorageSync('anniversaryList', newList);
       
       wx.showToast({
@@ -222,7 +276,7 @@ Page({
   },
 
   /**
-   * 发送通知
+   * 发送通知（使用用户配置的提醒频率）
    */
   sendNotifications() {
     try {
@@ -231,9 +285,10 @@ Page({
       
       list.forEach(item => {
         const result = dateUtils.calculateDaysDifference(item.date, today);
+        const remindDays = item.remindDays || [7, 3, 1]; // 默认提醒频率
         
-        // 如果剩余天数为 1、3、7 天，发送通知
-        if (!result.isPast && (result.days === 1 || result.days === 3 || result.days === 7)) {
+        // 检查是否匹配用户配置的提醒频率
+        if (!result.isPast && remindDays.includes(result.days)) {
           this.sendNotificationMessage(item, result.days);
         }
       });
