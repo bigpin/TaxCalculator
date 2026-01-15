@@ -6,6 +6,7 @@
       label="纪念日名称"
       placeholder="请输入纪念日名称"
       value="{{formData.name}}"
+      align="left"
       bind:change="onNameChange"
       maxlength="20"
       tips="{{nameError ? '请输入纪念日名称' : ''}}"
@@ -35,7 +36,7 @@
     />
     <t-picker
       visible="{{typePickerVisible}}"
-      value="{{[typeIndex]}}"
+      value="{{[formData.type]}}"
       title="选择类型"
       cancelBtn="取消"
       confirmBtn="确认"

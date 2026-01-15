@@ -83,6 +83,13 @@ Page({
         console.log('首页加载');
     },
 
+    onShareAppMessage() {
+        return {
+            title: 'Max的工具宝藏',
+            path: '/pages/index/index',
+        };
+    },
+
     // 切换搜索框显示
     toggleSearch() {
         this.setData({

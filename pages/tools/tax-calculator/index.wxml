@@ -68,6 +68,17 @@
         tips="{{attchErr ? '请输入正确的税率' : ''}}"
         t-class-tips="tips"
       />
+      <t-input
+        id="pension"
+        label="个人养老金"
+        placeholder="0"
+        suffix="元/月"
+        align="right"
+        type="number"
+        bindchange="onTexInput"
+        tips="{{pensionErr ? '请输入正确数字' : '年度上限 12000（按月不超过 1000）'}}"
+        t-class-tips="tips"
+      />
     </view>
   </view>
 

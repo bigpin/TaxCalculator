@@ -2,12 +2,20 @@
   <!-- 顶部标题 -->
   <view class="header">
     <view class="header-row">
-      <view class="header-text">
-        <view class="header-title">AI工具箱精选版</view>
-        <view class="header-subtitle">便捷工具，触手可及</view>
+      <view class="header-left">
+        <image class="app-icon" src="/assets/TDesignLogo@2x.png" mode="aspectFit" />
+        <view class="header-text">
+          <view class="header-title">Max的工具宝藏</view>
+          <view class="header-subtitle">便捷工具，触手可及</view>
+        </view>
       </view>
-      <view class="search-icon" bindtap="toggleSearch">
-        <t-icon name="search" size="48rpx" color="#fff" />
+      <view class="header-actions">
+        <button class="header-icon-btn" open-type="share">
+          <t-icon name="share" size="48rpx" color="#fff" />
+        </button>
+        <view class="header-icon-btn" bindtap="toggleSearch">
+          <t-icon name="search" size="48rpx" color="#fff" />
+        </view>
       </view>
     </view>
     <!-- 搜索框 -->
@@ -75,6 +83,6 @@
 
   <!-- 底部版权 -->
   <view class="footer">
-    <text>AI工具箱精选版 v1.0</text>
+    <text>Max的工具宝藏 v1.0</text>
   </view>
 </view>

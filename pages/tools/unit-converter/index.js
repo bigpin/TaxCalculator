@@ -75,11 +75,11 @@ Page({
     // value 可能是数字索引或字符串，需要转换为数字
     const index = typeof value === 'number' ? value : parseInt(value, 10);
     if (!isNaN(index) && index >= 0 && index < this.data.unitTypes.length) {
-      this.setData({
-        currentUnitType: index,
-        unitTypeVisible: false
-      });
-      this.initUnitType(index);
+    this.setData({
+      currentUnitType: index,
+      unitTypeVisible: false
+    });
+    this.initUnitType(index);
     } else {
       this.setData({ unitTypeVisible: false });
     }
@@ -163,11 +163,11 @@ Page({
     // 根据 value 查找索引
     const index = this.data.currentUnits.findIndex(unit => unit.value === value);
     if (index !== -1) {
-      this.setData({
-        fromUnitIndex: index,
-        fromUnitVisible: false
-      });
-      this.calculate();
+    this.setData({
+      fromUnitIndex: index,
+      fromUnitVisible: false
+    });
+    this.calculate();
     } else {
       this.setData({ fromUnitVisible: false });
     }
@@ -179,11 +179,11 @@ Page({
     // 根据 value 查找索引
     const index = this.data.currentUnits.findIndex(unit => unit.value === value);
     if (index !== -1) {
-      this.setData({
-        toUnitIndex: index,
-        toUnitVisible: false
-      });
-      this.calculate();
+    this.setData({
+      toUnitIndex: index,
+      toUnitVisible: false
+    });
+    this.calculate();
     } else {
       this.setData({ toUnitVisible: false });
     }

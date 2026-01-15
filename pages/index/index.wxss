@@ -20,8 +20,26 @@ page {
   align-items: flex-start;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.app-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 10rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
 .header-text {
   flex: 1;
+  min-width: 0;
 }
 
 .header-title {
@@ -35,7 +53,13 @@ page {
   opacity: 0.8;
 }
 
-.search-icon {
+.header-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 10rpx;
+}
+
+.header-icon-btn {
   width: 80rpx;
   height: 80rpx;
   display: flex;
@@ -43,11 +67,17 @@ page {
   justify-content: center;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  margin-top: 10rpx;
   transition: all 0.3s;
+  padding: 0;
+  border: none;
+  line-height: 1;
 }
 
-.search-icon:active {
+.header-icon-btn::after {
+  border: none;
+}
+
+.header-icon-btn:active {
   background: rgba(255, 255, 255, 0.35);
   transform: scale(0.95);
 }
