@@ -1,0 +1,536 @@
+<view class="container">
+  <!-- 风险提示横幅 -->
+  <view class="risk-warning">
+    <t-icon name="error-circle" size="32rpx" color="#fff" />
+    <text class="warning-text">本工具展示信息仅供参考，不构成任何投资建议</text>
+  </view>
+
+  <!-- 信号规则说明 -->
+  <view class="rules-section">
+    <view 
+      class="rules-header"
+      bindtap="toggleRules"
+    >
+      <view class="rules-header-left">
+        <t-icon name="info-circle" size="32rpx" color="#d32f2f" />
+        <text class="rules-title">信号规则说明</text>
+      </view>
+      <t-icon 
+        name="{{showRules ? 'chevron-up' : 'chevron-down'}}" 
+        size="28rpx" 
+        color="#d32f2f" 
+      />
+    </view>
+    
+    <view wx:if="{{showRules}}" class="rules-content">
+      <view class="rules-section-item">
+        <text class="rules-section-title">概述</text>
+        <text class="rules-text">系统基于技术指标分析，自动检测股票买入信号。信号检测分为两个阶段：</text>
+        <text class="rules-text">1. 历史信号统计：遍历历史数据，统计各信号类型的成功率和出现次数</text>
+        <text class="rules-text">2. 最近3天信号筛选：从最近3个交易日中筛选高胜率信号</text>
+      </view>
+
+      <view class="rules-section-item">
+        <text class="rules-section-title">前置条件</text>
+        <text class="rules-text">• 数据要求：至少需要16天的历史K线数据</text>
+        <text class="rules-text">• 输出条件：只有当最近3天出现6种以上不同信号类型时，才会输出报告</text>
+      </view>
+
+      <view class="rules-section-item">
+        <text class="rules-section-title">主要信号类型</text>
+        <text class="rules-text">• KDJ信号：KDJ超卖、KDJ金叉、KDJ底背离</text>
+        <text class="rules-text">• MACD信号：MACD金叉、MACD零轴上穿、MACD底背离</text>
+        <text class="rules-text">• RSI信号：RSI超卖、RSI金叉</text>
+        <text class="rules-text">• BOLL信号：BOLL下轨支撑、BOLL带宽扩张</text>
+        <text class="rules-text">• MA信号：MA5上穿MA20、MA20支撑</text>
+        <text class="rules-text">• DMI信号：DMI金叉、ADX强势</text>
+        <text class="rules-text">• CCI信号：CCI超卖、CCI零轴上穿</text>
+        <text class="rules-text">• ROC信号：ROC零轴上穿、ROC底背离</text>
+      </view>
+
+      <view class="rules-section-item">
+        <text class="rules-section-title">成功率计算</text>
+        <text class="rules-text">• 成功定义：信号出现后，未来14天内最高涨幅达到5%以上</text>
+        <text class="rules-text">• 信号胜率：该信号类型历史成功率 = 成功次数 / 总出现次数 × 100</text>
+        <text class="rules-text">• 整体胜率：所有信号类型的综合成功率 = 总成功次数 / 总信号数 × 100</text>
+      </view>
+
+      <view class="rules-section-item">
+        <text class="rules-section-title">筛选规则</text>
+        <text class="rules-text">同时满足以下条件：</text>
+        <text class="rules-text">1. 历史样本充足：该信号类型历史出现次数 > 8次</text>
+        <text class="rules-text">2. 信号胜率达标：该信号类型历史成功率 ≥ 60%</text>
+        <text class="rules-text">3. 整体胜率达标：所有信号类型的整体成功率 ≥ 50%</text>
+        <text class="rules-text">4. 时间范围：最近3个交易日（排除周末）</text>
+      </view>
+
+      <view class="rules-section-item">
+        <text class="rules-section-title">输出规则</text>
+        <text class="rules-text">• 最近3天至少出现6种以上不同信号类型</text>
+        <text class="rules-text">• 满足筛选条件的信号才会被输出</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日期选择器 -->
+  <t-picker
+    visible="{{datePickerVisible}}"
+    value="{{[datePickerType === 'start' ? startDate : endDate]}}"
+    title="选择{{datePickerType === 'start' ? '开始' : '结束'}}日期"
+    bind:change="onDatePickerConfirm"
+    bind:cancel="onDatePickerCancel"
+  >
+    <t-picker-item mode="date" min="{{minDate}}" max="{{maxDate}}" />
+  </t-picker>
+
+  <!-- 信号类型选择器 -->
+  <t-picker
+    visible="{{signalTypePickerVisible}}"
+    value="{{[signalTypeIndex]}}"
+    title="选择信号类型"
+    bind:change="onSignalTypePickerConfirm"
+    bind:cancel="onSignalTypePickerCancel"
+  >
+    <t-picker-item options="{{signalTypeOptions}}" />
+  </t-picker>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <t-icon name="loading" size="48rpx" color="#0052d9" />
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{currentPageData.length === 0}}" class="empty-state">
+    <t-icon name="file-search" size="120rpx" color="#ccc" />
+    <text class="empty-text">暂无信号数据</text>
+    <text class="empty-desc">请调整筛选条件或稍后再试</text>
+  </view>
+
+  <!-- 信号列表 -->
+  <view wx:else class="signals-list">
+    <view 
+      wx:for="{{currentPageData}}" 
+      wx:key="date"
+      class="date-group"
+    >
+      <!-- 日期标题 -->
+      <view class="date-header" bindtap="toggleDateGroup" data-date="{{item.date}}">
+        <view class="date-header-left">
+          <t-icon 
+            name="{{expandedDateGroups[item.date] ? 'chevron-down' : 'chevron-right'}}" 
+            size="28rpx" 
+            color="#fff" 
+          />
+          <t-icon name="calendar" size="32rpx" color="#fff" />
+          <text class="date-title">{{item.date}}</text>
+          <text class="date-count">({{item.stocks.length}}只股票)</text>
+        </view>
+        <view class="date-header-right">
+          <text class="date-toggle-text">{{expandedDateGroups[item.date] ? '收起' : '展开'}}</text>
+        </view>
+      </view>
+
+      <!-- 股票卡片列表 -->
+      <view class="signals-container {{expandedDateGroups[item.date] ? 'show' : ''}}">
+        <view 
+          wx:for="{{item.stocks}}"
+          wx:for-item="stock"
+          wx:key="stock_code"
+          class="stock-card"
+        >
+          <!-- 股票头部 -->
+          <view class="card-header">
+            <view 
+              class="stock-info-wrapper"
+              bindtap="onStockCodeTap"
+              data-code="{{stock.stock_code}}"
+            >
+              <text class="stock-name">{{stock.stock_name}}</text>
+              <text class="stock-code">{{stock.stock_code}}</text>
+            </view>
+            <view class="stock-summary-card">
+              <view class="summary-item">
+                <text class="summary-label">整体胜率</text>
+                <text class="summary-value success-rate-highlight">{{stock.overall_success_rate || 0}}%</text>
+              </view>
+              <view class="summary-divider"></view>
+              <view class="summary-item">
+                <text class="summary-label">信号数</text>
+                <text class="summary-value">{{stock.signals.length}}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 信号列表 -->
+          <view class="signals-list-inner">
+            <view 
+              class="signals-list-title"
+              bindtap="toggleSignalsList"
+              data-id="{{stock.stock_code}}_{{item.date}}"
+            >
+              <view class="signals-title-left">
+                <t-icon 
+                  name="{{expandedSignals[stock.stock_code + '_' + item.date] ? 'chevron-down' : 'chevron-right'}}" 
+                  size="20rpx" 
+                  color="#666" 
+                />
+                <t-icon name="chart-line" size="24rpx" color="#666" />
+                <text class="signals-title-text">信号列表 ({{stock.signals.length}}个，{{stock.signalTypeStats ? stock.signalTypeStats.length : 0}}种类型)</text>
+              </view>
+              <text class="signals-toggle-text">{{expandedSignals[stock.stock_code + '_' + item.date] ? '收起' : '展开'}}</text>
+            </view>
+            
+            <!-- 信号类型统计（折叠时显示） -->
+            <view 
+              wx:if="{{!expandedSignals[stock.stock_code + '_' + item.date] && stock.signalTypeStats}}"
+              class="signal-type-stats"
+            >
+              <view 
+                wx:for="{{stock.signalTypeStats}}"
+                wx:for-item="stat"
+                wx:key="type"
+                class="signal-type-stat-item"
+              >
+                <text class="stat-type">{{stat.type}}:</text>
+                <text class="stat-count">{{stat.count}}个</text>
+              </view>
+            </view>
+            <view 
+              wx:if="{{expandedSignals[stock.stock_code + '_' + item.date]}}"
+              class="signals-list-content"
+            >
+              <view 
+                wx:for="{{stock.signals}}"
+                wx:for-item="signal"
+                wx:key="_id"
+                class="signal-item"
+              >
+              <view class="signal-item-header">
+                <view class="signal-type-badge">
+                  <t-tag 
+                    theme="{{signal.signal_success_rate >= 70 ? 'success' : signal.signal_success_rate >= 60 ? 'warning' : 'primary'}}" 
+                    variant="light" 
+                    size="small"
+                    shape="round"
+                  >
+                    {{signal.signal_type_cn || signal.signal_label || signal.signal_type}}
+                  </t-tag>
+                  <view class="signal-strength-dot" style="background-color: {{signal.signal_success_rate >= 70 ? '#00c853' : signal.signal_success_rate >= 60 ? '#ff6f00' : '#d32f2f'}}"></view>
+                </view>
+                <text class="signal-date">{{signal.signal_date}}</text>
+              </view>
+              <view class="signal-item-content">
+                <view class="signal-metrics-grid">
+                  <view class="metric-card">
+                    <text class="metric-label-small">信号胜率</text>
+                    <text class="metric-value-large" style="color: {{signal.signal_success_rate >= 70 ? '#00c853' : signal.signal_success_rate >= 60 ? '#ff6f00' : '#d32f2f'}}">{{signal.signal_success_rate || 0}}%</text>
+                  </view>
+                  <view class="metric-card">
+                    <text class="metric-label-small">历史出现</text>
+                    <text class="metric-value-large">{{signal.signal_total || 0}}次</text>
+                  </view>
+                  <view class="metric-card">
+                    <text class="metric-label-small">收盘价</text>
+                    <text class="metric-value-large price-value">¥{{signal.close || '-'}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            </view>
+          </view>
+
+          <!-- 展开/收起按钮 -->
+          <view 
+            class="expand-btn"
+            bindtap="toggleCardExpand"
+            data-id="{{stock.stock_code}}_{{item.date}}"
+          >
+            <text class="expand-text">{{expandedCards[stock.stock_code + '_' + item.date] ? '收起详情' : '展开详情'}}</text>
+            <t-icon 
+              name="{{expandedCards[stock.stock_code + '_' + item.date] ? 'chevron-up' : 'chevron-down'}}" 
+              size="24rpx" 
+              color="#666" 
+            />
+          </view>
+
+          <!-- 详情展开区域 -->
+          <view 
+            wx:if="{{expandedCards[stock.stock_code + '_' + item.date]}}"
+            class="card-detail"
+          >
+            <view 
+              wx:for="{{stock.signals}}"
+              wx:for-item="signal"
+              wx:key="_id"
+              class="detail-signal-item"
+            >
+              <view class="detail-signal-header">
+                <text class="detail-signal-type">{{signal.signal_type_cn || signal.signal_label || signal.signal_type}}</text>
+                <text class="detail-signal-date">{{signal.signal_date}}</text>
+              </view>
+              <view class="detail-signal-content">
+                <view class="detail-section">
+                  <text class="detail-label">信号胜率：</text>
+                  <text class="detail-value">{{signal.signal_success_rate || 0}}%</text>
+                </view>
+                <view class="detail-section">
+                  <text class="detail-label">历史出现：</text>
+                  <text class="detail-value">{{signal.signal_total || 0}}次</text>
+                </view>
+                <view class="detail-section">
+                  <text class="detail-label">整体胜率：</text>
+                  <text class="detail-value">{{signal.overall_success_rate || 0}}%</text>
+                </view>
+                <view class="detail-section">
+                  <text class="detail-label">收盘价：</text>
+                  <text class="detail-value">{{signal.close || '-'}}</text>
+                </view>
+                
+                <!-- 技术指标 -->
+                <view wx:if="{{signal.metricsArray && signal.metricsArray.length > 0}}" class="detail-section">
+                  <text class="detail-label">技术指标：</text>
+                  <view class="metrics-grid">
+                    <view 
+                      wx:for="{{signal.metricsArray}}"
+                      wx:for-item="metric"
+                      wx:key="key"
+                      class="metric-tag"
+                    >
+                      <text class="metric-key">{{metric.key}}：</text>
+                      <text class="metric-val">{{metric.value}}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 其他日期列表 -->
+    <view wx:if="{{otherDatesData && otherDatesData.length > 0}}" class="other-dates-section">
+      <view class="other-dates-title">
+        <t-icon name="calendar" size="32rpx" color="#d32f2f" />
+        <text class="other-dates-title-text">其他日期</text>
+      </view>
+      
+      <view 
+        wx:for="{{otherDatesData}}"
+        wx:for-item="dateItem"
+        wx:key="date"
+        class="other-date-item"
+      >
+        <!-- 日期头部 -->
+        <view 
+          class="other-date-header"
+          bindtap="toggleOtherDate"
+          data-date="{{dateItem.date}}"
+        >
+          <view class="other-date-header-left">
+            <t-icon 
+              name="{{expandedOtherDates[dateItem.date] ? 'chevron-down' : 'chevron-right'}}" 
+              size="28rpx" 
+              color="#d32f2f" 
+            />
+            <t-icon name="calendar" size="28rpx" color="#d32f2f" />
+            <text class="other-date-title">{{dateItem.date}}</text>
+            <text class="other-date-count">({{dateItem.stockCount}}只股票)</text>
+          </view>
+          <view class="other-date-header-right">
+            <text class="other-date-toggle-text">{{expandedOtherDates[dateItem.date] ? '收起' : '展开'}}</text>
+            <t-icon 
+              wx:if="{{loadingOtherDates[dateItem.date]}}"
+              name="loading" 
+              size="24rpx" 
+              color="#d32f2f" 
+            />
+          </view>
+        </view>
+
+        <!-- 展开后的股票列表 -->
+        <view 
+          wx:if="{{expandedOtherDates[dateItem.date] && dateItem.loaded}}"
+          class="other-date-stocks-container"
+        >
+          <view 
+            wx:for="{{dateItem.stocks}}"
+            wx:for-item="stock"
+            wx:key="stock_code"
+            class="stock-card"
+          >
+            <!-- 股票头部 -->
+            <view class="card-header">
+              <view 
+                class="stock-info-wrapper"
+                bindtap="onStockCodeTap"
+                data-code="{{stock.stock_code}}"
+              >
+                <text class="stock-name">{{stock.stock_name}}</text>
+                <text class="stock-code">{{stock.stock_code}}</text>
+              </view>
+              <view class="stock-summary-card">
+                <view class="summary-item">
+                  <text class="summary-label">整体胜率</text>
+                  <text class="summary-value success-rate-highlight">{{stock.overall_success_rate || 0}}%</text>
+                </view>
+                <view class="summary-divider"></view>
+                <view class="summary-item">
+                  <text class="summary-label">信号数</text>
+                  <text class="summary-value">{{stock.signals.length}}</text>
+                </view>
+              </view>
+            </view>
+
+            <!-- 信号列表 -->
+            <view class="signals-list-inner">
+              <view 
+                class="signals-list-title"
+                bindtap="toggleSignalsList"
+                data-id="{{stock.stock_code}}_{{dateItem.date}}"
+              >
+                <view class="signals-title-left">
+                  <t-icon 
+                    name="{{expandedSignals[stock.stock_code + '_' + dateItem.date] ? 'chevron-down' : 'chevron-right'}}" 
+                    size="20rpx" 
+                    color="#666" 
+                  />
+                  <t-icon name="chart-line" size="24rpx" color="#666" />
+                  <text class="signals-title-text">信号列表 ({{stock.signals.length}}个，{{stock.signalTypeStats ? stock.signalTypeStats.length : 0}}种类型)</text>
+                </view>
+                <text class="signals-toggle-text">{{expandedSignals[stock.stock_code + '_' + dateItem.date] ? '收起' : '展开'}}</text>
+              </view>
+              
+              <!-- 信号类型统计（折叠时显示） -->
+              <view 
+                wx:if="{{!expandedSignals[stock.stock_code + '_' + dateItem.date] && stock.signalTypeStats}}"
+                class="signal-type-stats"
+              >
+                <view 
+                  wx:for="{{stock.signalTypeStats}}"
+                  wx:for-item="stat"
+                  wx:key="type"
+                  class="signal-type-stat-item"
+                >
+                  <text class="stat-type">{{stat.type}}:</text>
+                  <text class="stat-count">{{stat.count}}个</text>
+                </view>
+              </view>
+              
+              <!-- 展开的信号列表 -->
+              <view 
+                wx:if="{{expandedSignals[stock.stock_code + '_' + dateItem.date]}}"
+                class="signals-list-content"
+              >
+                <view 
+                  wx:for="{{stock.signals}}"
+                  wx:for-item="signal"
+                  wx:key="_id"
+                  class="signal-item"
+                >
+                  <view class="signal-item-header">
+                    <view class="signal-type-badge">
+                      <t-tag 
+                        theme="{{signal.signal_success_rate >= 70 ? 'success' : signal.signal_success_rate >= 60 ? 'warning' : 'primary'}}" 
+                        variant="light" 
+                        size="small"
+                        shape="round"
+                      >
+                        {{signal.signal_type_cn || signal.signal_label || signal.signal_type}}
+                      </t-tag>
+                      <view class="signal-strength-dot" style="background-color: {{signal.signal_success_rate >= 70 ? '#00c853' : signal.signal_success_rate >= 60 ? '#ff6f00' : '#d32f2f'}}"></view>
+                    </view>
+                    <text class="signal-date">{{signal.signal_date}}</text>
+                  </view>
+                  <view class="signal-item-content">
+                    <view class="signal-metrics-grid">
+                      <view class="metric-card">
+                        <text class="metric-label-small">信号胜率</text>
+                        <text class="metric-value-large" style="color: {{signal.signal_success_rate >= 70 ? '#00c853' : signal.signal_success_rate >= 60 ? '#ff6f00' : '#d32f2f'}}">{{signal.signal_success_rate || 0}}%</text>
+                      </view>
+                      <view class="metric-card">
+                        <text class="metric-label-small">历史出现</text>
+                        <text class="metric-value-large">{{signal.signal_total || 0}}次</text>
+                      </view>
+                      <view class="metric-card">
+                        <text class="metric-label-small">收盘价</text>
+                        <text class="metric-value-large price-value">¥{{signal.close || '-'}}</text>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+
+            <!-- 展开/收起按钮 -->
+            <view 
+              class="expand-btn"
+              bindtap="toggleCardExpand"
+              data-id="{{stock.stock_code}}_{{dateItem.date}}"
+            >
+              <text class="expand-text">{{expandedCards[stock.stock_code + '_' + dateItem.date] ? '收起详情' : '展开详情'}}</text>
+              <t-icon 
+                name="{{expandedCards[stock.stock_code + '_' + dateItem.date] ? 'chevron-up' : 'chevron-down'}}" 
+                size="24rpx" 
+                color="#666" 
+              />
+            </view>
+
+            <!-- 详情展开区域 -->
+            <view 
+              wx:if="{{expandedCards[stock.stock_code + '_' + dateItem.date]}}"
+              class="card-detail"
+            >
+              <view 
+                wx:for="{{stock.signals}}"
+                wx:for-item="signal"
+                wx:key="_id"
+                class="detail-signal-item"
+              >
+                <view class="detail-signal-header">
+                  <text class="detail-signal-type">{{signal.signal_type_cn || signal.signal_label || signal.signal_type}}</text>
+                  <text class="detail-signal-date">{{signal.signal_date}}</text>
+                </view>
+                <view class="detail-signal-content">
+                  <view class="detail-section">
+                    <text class="detail-label">信号胜率：</text>
+                    <text class="detail-value">{{signal.signal_success_rate || 0}}%</text>
+                  </view>
+                  <view class="detail-section">
+                    <text class="detail-label">历史出现：</text>
+                    <text class="detail-value">{{signal.signal_total || 0}}次</text>
+                  </view>
+                  <view class="detail-section">
+                    <text class="detail-label">整体胜率：</text>
+                    <text class="detail-value">{{signal.overall_success_rate || 0}}%</text>
+                  </view>
+                  <view class="detail-section">
+                    <text class="detail-label">收盘价：</text>
+                    <text class="detail-value">{{signal.close || '-'}}</text>
+                  </view>
+                  
+                  <!-- 技术指标 -->
+                  <view wx:if="{{signal.metricsArray && signal.metricsArray.length > 0}}" class="detail-section">
+                    <text class="detail-label">技术指标：</text>
+                    <view class="metrics-grid">
+                      <view 
+                        wx:for="{{signal.metricsArray}}"
+                        wx:for-item="metric"
+                        wx:key="key"
+                        class="metric-tag"
+                      >
+                        <text class="metric-key">{{metric.key}}：</text>
+                        <text class="metric-val">{{metric.value}}</text>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

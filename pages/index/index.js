@@ -65,6 +65,14 @@ const TOOLS = [
         category: 'life',
         description: '记录生日、纪念日、还款日等重要日期，自动计算倒计时，支持订阅消息提醒',
         path: '/pages/tools/anniversary/index'
+    },
+    {
+        id: 'stock-signals',
+        name: '股票强力信号',
+        icon: 'chart',
+        category: 'finance',
+        description: '展示股票强力信号数据，按日期分组查看，支持筛选和详情展开',
+        path: '/pages/tools/stock-signals/index'
     }
 ];
 
@@ -81,6 +89,8 @@ Page({
 
     onLoad() {
         console.log('首页加载');
+        console.log('工具列表:', this.data.tools);
+        console.log('工具数量:', this.data.tools.length);
     },
 
     onShareAppMessage() {
