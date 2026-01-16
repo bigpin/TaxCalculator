@@ -1,0 +1,9 @@
+{
+  "name": "checkStockSignals",
+  "version": "1.0.0",
+  "description": "定时检查股票信号数据并发送通知",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

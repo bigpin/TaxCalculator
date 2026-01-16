@@ -5,6 +5,38 @@
     <text class="warning-text">本工具展示信息仅供参考，不构成任何投资建议</text>
   </view>
 
+  <!-- 订阅按钮区域 -->
+  <view class="subscribe-section">
+    <view class="subscribe-content">
+      <view class="subscribe-info">
+        <t-icon name="notification" size="32rpx" color="#d32f2f" />
+        <view class="subscribe-text-wrapper">
+          <text class="subscribe-title">股票信号订阅</text>
+          <text class="subscribe-desc">{{isSubscribed ? '已订阅，每日4-8点自动推送最新信号' : '订阅后每日自动推送最新股票信号'}}</text>
+        </view>
+      </view>
+      <t-button 
+        wx:if="{{!isSubscribed}}"
+        theme="danger" 
+        size="small"
+        bindtap="handleSubscribe"
+        loading="{{subscribing}}"
+      >
+        订阅
+      </t-button>
+      <t-button 
+        wx:else
+        theme="default" 
+        variant="outline"
+        size="small"
+        bindtap="handleUnsubscribe"
+        loading="{{unsubscribing}}"
+      >
+        取消订阅
+      </t-button>
+    </view>
+  </view>
+
   <!-- 信号规则说明 -->
   <view class="rules-section">
     <view 

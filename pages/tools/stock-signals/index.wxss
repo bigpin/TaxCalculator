@@ -25,6 +25,50 @@ page {
   line-height: 1.5;
 }
 
+/* 订阅按钮区域 */
+.subscribe-section {
+  margin: 16rpx;
+  background-color: #fff;
+  border-radius: 12rpx;
+  border: 2rpx solid #d32f2f;
+  overflow: hidden;
+  box-shadow: 0 2rpx 8rpx rgba(211, 47, 47, 0.1);
+}
+
+.subscribe-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+}
+
+.subscribe-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 16rpx;
+}
+
+.subscribe-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+}
+
+.subscribe-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.4;
+}
+
+.subscribe-desc {
+  font-size: 22rpx;
+  color: #8c8c8c;
+  line-height: 1.4;
+}
+
 /* 信号规则说明 */
 .rules-section {
   margin: 16rpx;

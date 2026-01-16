@@ -56,12 +56,19 @@ Page({
     expandedDateGroups: {}, // 展开的日期分组（默认全部展开）
     expandedOtherDates: {}, // 展开的其他日期（默认全部收起）
     loadingOtherDates: {}, // 正在加载的其他日期
-    showRules: false // 是否显示规则说明（默认收起）
+    showRules: false, // 是否显示规则说明（默认收起）
+    
+    // 订阅相关
+    isSubscribed: false, // 是否已订阅
+    subscribing: false, // 订阅中
+    unsubscribing: false // 取消订阅中
   },
 
   onLoad() {
     // 加载数据
     this.loadSignals();
+    // 检查订阅状态
+    this.checkSubscribeStatus();
   },
 
   onPullDownRefresh() {
@@ -854,6 +861,163 @@ Page({
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${date.getFullYear()}-${month}-${day}`;
+  },
+
+  /**
+   * 检查订阅状态
+   */
+  async checkSubscribeStatus() {
+    try {
+      // 查询当前用户的订阅记录（数据库会自动根据_openid过滤）
+      const res = await db.collection('stock_signals_subscriber')
+        .where({
+          status: 'active'
+        })
+        .get();
+      
+      this.setData({
+        isSubscribed: res.data && res.data.length > 0
+      });
+    } catch (error) {
+      console.error('检查订阅状态失败:', error);
+    }
+  },
+
+  /**
+   * 处理订阅
+   */
+  async handleSubscribe() {
+    if (this.data.subscribing) return;
+    
+    this.setData({ subscribing: true });
+    
+    try {
+      // 1. 请求订阅消息授权
+      const templateId = '60NMuOzka6yvGWttPKA-SWlYiB0o580AmdsQBM0SHjg';
+      const subscribeRes = await wx.requestSubscribeMessage({
+        tmplIds: [templateId]
+      });
+      
+      console.log('订阅消息授权结果:', subscribeRes);
+      
+      // 检查授权结果
+      if (subscribeRes[templateId] === 'reject') {
+        wx.showToast({
+          title: '需要授权才能订阅',
+          icon: 'none'
+        });
+        this.setData({ subscribing: false });
+        return;
+      }
+      
+      // 2. 检查是否已有订阅记录
+      const existingRes = await db.collection('stock_signals_subscriber')
+        .where({
+          status: 'active'
+        })
+        .get();
+      
+      const now = new Date();
+      
+      if (existingRes.data && existingRes.data.length > 0) {
+        // 如果已有记录，更新为活跃状态
+        await db.collection('stock_signals_subscriber')
+          .doc(existingRes.data[0]._id)
+          .update({
+            data: {
+              status: 'active',
+              subscribeTime: now
+            }
+          });
+      } else {
+        // 如果没有记录，创建新记录
+        await db.collection('stock_signals_subscriber').add({
+          data: {
+            subscribeTime: now,
+            status: 'active',
+            lastNotifiedDate: null
+          }
+        });
+      }
+      
+      // 3. 更新UI状态
+      this.setData({
+        isSubscribed: true,
+        subscribing: false
+      });
+      
+      wx.showToast({
+        title: '订阅成功',
+        icon: 'success'
+      });
+    } catch (error) {
+      console.error('订阅失败:', error);
+      wx.showToast({
+        title: '订阅失败，请重试',
+        icon: 'none'
+      });
+      this.setData({ subscribing: false });
+    }
+  },
+
+  /**
+   * 处理取消订阅
+   */
+  async handleUnsubscribe() {
+    if (this.data.unsubscribing) return;
+    
+    // 确认对话框
+    const res = await new Promise((resolve) => {
+      wx.showModal({
+        title: '确认取消订阅',
+        content: '取消后将不再收到股票信号推送通知',
+        success: (res) => resolve(res.confirm),
+        fail: () => resolve(false)
+      });
+    });
+    
+    if (!res) return;
+    
+    this.setData({ unsubscribing: true });
+    
+    try {
+      // 更新订阅状态为inactive（数据库会自动根据_openid过滤）
+      const subscriberRes = await db.collection('stock_signals_subscriber')
+        .where({
+          status: 'active'
+        })
+        .get();
+      
+      if (subscriberRes.data && subscriberRes.data.length > 0) {
+        const promises = subscriberRes.data.map(item => 
+          db.collection('stock_signals_subscriber').doc(item._id).update({
+            data: {
+              status: 'inactive'
+            }
+          })
+        );
+        
+        await Promise.all(promises);
+      }
+      
+      // 更新UI状态
+      this.setData({
+        isSubscribed: false,
+        unsubscribing: false
+      });
+      
+      wx.showToast({
+        title: '已取消订阅',
+        icon: 'success'
+      });
+    } catch (error) {
+      console.error('取消订阅失败:', error);
+      wx.showToast({
+        title: '取消订阅失败，请重试',
+        icon: 'none'
+      });
+      this.setData({ unsubscribing: false });
+    }
   },
 
   /**
