@@ -61,7 +61,9 @@ Page({
     // 订阅相关
     isSubscribed: false, // 是否已订阅
     subscribing: false, // 订阅中
-    unsubscribing: false // 取消订阅中
+    unsubscribing: false, // 取消订阅中
+    showTestButton: false, // 是否显示测试按钮（开发调试用）
+    testing: false // 测试发送中
   },
 
   onLoad() {
@@ -1018,6 +1020,83 @@ Page({
       });
       this.setData({ unsubscribing: false });
     }
+  },
+
+  /**
+   * 测试推送消息（开发调试用）
+   */
+  async testNotification() {
+    if (this.data.testing) return;
+    
+    wx.showModal({
+      title: '测试推送',
+      content: '将发送一条测试股票信号推送消息，请确保已订阅',
+      success: async (res) => {
+        if (res.confirm) {
+          this.setData({ testing: true });
+          
+          try {
+            // 1. 请求订阅消息权限
+            const templateId = '60NMuOzka6yvGWttPKA-SWlYiB0o580AmdsQBM0SHjg';
+            const subscribeRes = await new Promise((resolve, reject) => {
+              wx.requestSubscribeMessage({
+                tmplIds: [templateId],
+                success: resolve,
+                fail: reject
+              });
+            });
+            
+            console.log('订阅消息授权结果:', subscribeRes);
+            
+            if (subscribeRes[templateId] === 'reject') {
+              wx.showToast({
+                title: '需要授权才能测试',
+                icon: 'none'
+              });
+              this.setData({ testing: false });
+              return;
+            }
+            
+            // 2. 获取今天的日期
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const reportDate = `${year}-${month}-${day}`;
+            
+            // 3. 调用云函数发送测试消息
+            const cloudRes = await wx.cloud.callFunction({
+              name: 'checkStockSignals',
+              data: {
+                action: 'test',
+                stockCount: 5, // 测试数据：5只股票
+                reportDate: reportDate
+              }
+            });
+            
+            console.log('测试推送结果:', cloudRes);
+            
+            if (cloudRes.result && cloudRes.result.success) {
+              wx.showToast({
+                title: '测试推送已发送',
+                icon: 'success'
+              });
+            } else {
+              throw new Error(cloudRes.result?.error || '发送失败');
+            }
+          } catch (error) {
+            console.error('测试推送失败:', error);
+            wx.showToast({
+              title: error.message || '测试推送失败',
+              icon: 'none',
+              duration: 2000
+            });
+          } finally {
+            this.setData({ testing: false });
+          }
+        }
+      }
+    });
   },
 
   /**

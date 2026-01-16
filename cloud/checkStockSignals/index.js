@@ -25,18 +25,36 @@ function formatDate(date) {
 /**
  * 发送订阅消息
  */
-async function sendNotification(openid, stockCount, reportDate) {
+async function sendNotification(openid, stockCount, reportDate, stockList) {
   const templateId = '60NMuOzka6yvGWttPKA-SWlYiB0o580AmdsQBM0SHjg';
   
   try {
+    // 产品名称：发现x只强力信号股票
+    const stockInfo = `发现${stockCount}只强力信号股票`;
+    
+    // character_string16 只能包含数字和字母，所以用股票代码拼接，最后加...
+    let stockCodes = '';
+    if (stockList && stockList.length > 0) {
+      const codes = stockList.map(s => s.stock_code || '').filter(Boolean);
+      // 限制长度，确保最后能加上...
+      const maxLength = 17; // 留3个字符给"..."
+      let codesStr = codes.join(',');
+      if (codesStr.length > maxLength) {
+        codesStr = codesStr.substring(0, maxLength);
+      }
+      stockCodes = codesStr + '...';
+    } else {
+      stockCodes = `STOCK${stockCount}...`;
+    }
+    
     const result = await cloud.openapi.subscribeMessage.send({
       touser: openid,
       templateId: templateId,
       page: 'pages/tools/stock-signals/index',
       data: {
-        thing15: { value: `今日股票信号更新` },
-        character_string16: { value: `共${stockCount}只股票` },
-        time7: { value: reportDate }
+        thing15: { value: stockInfo || `发现${stockCount}只股票强力信号` }, // 产品名称：股票信息
+        character_string16: { value: stockCodes }, // 代码：股票代码列表（character_string类型只能包含数字和字母）
+        time7: { value: reportDate } // 统计日期
       },
       miniprogramState: 'developer' // 开发版使用developer，正式版改为formal
     });
@@ -75,6 +93,33 @@ async function updateLastNotifiedDate(subscriberId, date) {
 exports.main = async (event, context) => {
   console.log('========== 股票信号检查开始 ==========');
   console.log('执行时间:', new Date().toISOString());
+  console.log('接收到的参数:', JSON.stringify(event, null, 2));
+  
+  // 测试模式：直接发送测试消息给当前用户
+  if (event.action === 'test') {
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+    const stockCount = event.stockCount || 5;
+    const reportDate = event.reportDate || formatDate(new Date());
+    
+    // 构建测试股票列表
+    const testStockList = event.stockList || [
+      { stock_code: 'sh601231', stock_name: '测试股票1' },
+      { stock_code: 'sh600000', stock_name: '测试股票2' },
+      { stock_code: 'sz000001', stock_name: '测试股票3' }
+    ];
+    
+    console.log('测试模式 - 发送给当前用户:', openid);
+    
+    const sendResult = await sendNotification(openid, stockCount, reportDate, testStockList);
+    
+    return {
+      success: sendResult.success,
+      message: sendResult.success ? '测试消息发送成功' : '测试消息发送失败',
+      error: sendResult.error,
+      errorCode: sendResult.errorCode
+    };
+  }
   
   const templateId = '60NMuOzka6yvGWttPKA-SWlYiB0o580AmdsQBM0SHjg';
   const today = formatDate(new Date());
@@ -114,10 +159,20 @@ exports.main = async (event, context) => {
       };
     }
     
-    // 统计今日股票数量（去重）
-    const stockCodes = new Set(todaySummaries.map(s => s.stock_code));
+    // 统计今日股票数量（去重），并构建股票列表
+    const stockMap = new Map();
+    todaySummaries.forEach(s => {
+      if (s.stock_code && !stockMap.has(s.stock_code)) {
+        stockMap.set(s.stock_code, {
+          stock_code: s.stock_code,
+          stock_name: s.stock_name || s.stock_code
+        });
+      }
+    });
+    
+    const stockList = Array.from(stockMap.values());
     results.hasNewData = true;
-    results.stockCount = stockCodes.size;
+    results.stockCount = stockList.length;
     
     console.log(`今天(${today})有${results.stockCount}只股票出现信号`);
     
@@ -181,7 +236,7 @@ exports.main = async (event, context) => {
       }
       
       // 发送通知
-      const sendResult = await sendNotification(openid, results.stockCount, today);
+      const sendResult = await sendNotification(openid, results.stockCount, today, stockList);
       
       if (sendResult.success) {
         results.sent++;

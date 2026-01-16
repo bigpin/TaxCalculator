@@ -69,6 +69,36 @@ page {
   line-height: 1.4;
 }
 
+/* 测试按钮（左下角悬浮） */
+.test-button-float {
+  position: fixed;
+  left: 30rpx;
+  bottom: 100rpx;
+  z-index: 999;
+  width: 120rpx;
+  height: 120rpx;
+  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  border-radius: 60rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(255, 152, 0, 0.4);
+  transition: all 0.3s;
+}
+
+.test-button-float:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(255, 152, 0, 0.3);
+}
+
+.test-button-text {
+  font-size: 20rpx;
+  color: #fff;
+  margin-top: 4rpx;
+  font-weight: 500;
+}
+
 /* 信号规则说明 */
 .rules-section {
   margin: 16rpx;
@@ -828,7 +858,7 @@ page {
 }
 
 .expand-text {
-  font-size: 28rpx;
+  font-size: 24rpx;
   font-weight: 500;
   margin-right: 12rpx;
   color: #0052d9;

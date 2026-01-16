@@ -565,4 +565,10 @@
       </view>
     </view>
   </view>
+
+  <!-- 测试按钮（左下角悬浮） -->
+  <view class="test-button-float" wx:if="{{showTestButton}}" bindtap="testNotification">
+    <t-icon name="setting" size="40rpx" color="#fff" />
+    <text class="test-button-text">测试</text>
+  </view>
 </view>
