@@ -1,6 +1,8 @@
 {
     "pages": [
         "pages/index/index",
+        "pages/recent/index",
+        "pages/my/index",
         "pages/tools/tax-calculator/index",
         "pages/tools/pension-calculator/index",
         "pages/tools/currency-exchange/index",

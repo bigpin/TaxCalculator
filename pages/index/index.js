@@ -1,6 +1,8 @@
 // pages/index/index.js
 // 工具分类首页
 
+const storage = require('../../utils/storage');
+
 // 工具分类定义
 const TOOL_CATEGORIES = {
     FINANCE: 'finance',
@@ -84,13 +86,30 @@ Page({
         tools: TOOLS,
         filteredTools: TOOLS,
         showSearch: false,
-        searchValue: ''
+        searchValue: '',
+        currentTab: 'tools', // 'tools' | 'recent' | 'my'
+        favorites: [], // 收藏的工具ID列表
+        recentUses: [], // 最近使用记录
+        favoriteTools: [] // 收藏的工具列表（用于我的Tab）
     },
 
     onLoad() {
         console.log('首页加载');
         console.log('工具列表:', this.data.tools);
         console.log('工具数量:', this.data.tools.length);
+        this.loadFavorites();
+        this.loadRecentUses();
+    },
+
+    onShow() {
+        // 页面显示时刷新收藏和最近使用数据
+        this.loadFavorites();
+        if (this.data.currentTab === 'recent') {
+            this.loadRecentUses();
+        }
+        if (this.data.currentTab === 'my') {
+            this.loadFavoriteTools();
+        }
     },
 
     onShareAppMessage() {
@@ -144,6 +163,13 @@ Page({
             );
         }
         
+        // 添加收藏状态
+        const favorites = this.data.favorites || [];
+        result = result.map(tool => ({
+            ...tool,
+            isFavorite: favorites.indexOf(tool.id) > -1
+        }));
+        
         return result;
     },
 
@@ -159,12 +185,23 @@ Page({
     // 点击工具
     onToolTap(e) {
         const index = e.currentTarget.dataset.index;
-        const tool = this.data.filteredTools[index];
+        let tool;
         
-        console.log('点击索引:', index);
-        console.log('工具数据:', tool);
+        console.log('点击工具，当前Tab:', this.data.currentTab, '索引:', index);
+        
+        // 根据当前Tab获取对应的工具列表
+        if (this.data.currentTab === 'recent') {
+            tool = this.data.recentUses[index]?.toolInfo;
+        } else if (this.data.currentTab === 'my') {
+            tool = this.data.favoriteTools[index];
+        } else {
+            tool = this.data.filteredTools[index];
+        }
+        
+        console.log('获取到的工具数据:', tool);
         
         if (!tool || !tool.path) {
+            console.error('工具数据无效:', tool);
             wx.showToast({
                 title: '工具数据无效',
                 icon: 'none'
@@ -172,16 +209,155 @@ Page({
             return;
         }
         
-        wx.navigateTo({
-            url: tool.path,
-            fail: (err) => {
-                console.error('导航失败:', err);
-                wx.showToast({
-                    title: '页面跳转失败',
-                    icon: 'none',
-                    duration: 2000
-                });
-            }
+        // 记录使用时间（使用原始工具数据，不包含isFavorite）
+        const toolInfo = {
+            id: tool.id,
+            name: tool.name,
+            icon: tool.icon,
+            category: tool.category,
+            description: tool.description,
+            path: tool.path
+        };
+        storage.saveRecentUse(tool.id, toolInfo);
+        
+        console.log('准备跳转到:', tool.path);
+        
+        // 使用setTimeout避免超时问题
+        setTimeout(() => {
+            wx.navigateTo({
+                url: tool.path,
+                success: () => {
+                    console.log('跳转成功');
+                },
+                fail: (err) => {
+                    console.error('navigateTo失败:', err);
+                    // 备选方案：使用redirectTo
+                    wx.redirectTo({
+                        url: tool.path,
+                        fail: (err2) => {
+                            console.error('redirectTo也失败:', err2);
+                            wx.showToast({
+                                title: '跳转失败',
+                                icon: 'none'
+                            });
+                        }
+                    });
+                }
+            });
+        }, 50);
+    },
+
+    // Tab点击
+    onTabItemTap(e) {
+        const tabValue = e.currentTarget.dataset.tab;
+        
+        // 如果点击的是当前Tab，不处理
+        if (tabValue === this.data.currentTab) {
+            return;
+        }
+        
+        this.setData({
+            currentTab: tabValue
         });
+        
+        // 根据Tab加载对应数据
+        if (tabValue === 'recent') {
+            this.loadRecentUses();
+        } else if (tabValue === 'my') {
+            this.loadFavoriteTools();
+        }
+    },
+
+    // 收藏点击
+    onFavoriteTap(e) {
+        const toolId = e.currentTarget.dataset.toolId;
+        const isFavorite = storage.toggleFavorite(toolId);
+        
+        // 更新收藏列表
+        this.loadFavorites();
+        
+        // 如果当前在"我的"Tab，刷新收藏工具列表
+        if (this.data.currentTab === 'my') {
+            this.loadFavoriteTools();
+        }
+        
+        // 如果当前在"最近使用"Tab，刷新列表以更新收藏状态
+        if (this.data.currentTab === 'recent') {
+            this.loadRecentUses();
+        }
+        
+        wx.showToast({
+            title: isFavorite ? '已收藏' : '已取消收藏',
+            icon: 'none',
+            duration: 1500
+        });
+    },
+
+    // 加载收藏列表
+    loadFavorites() {
+        const favorites = storage.getFavorites();
+        this.setData({
+            favorites: favorites
+        });
+        // 更新工具列表的收藏状态
+        this.setData({
+            filteredTools: this.filterTools(this.data.searchValue, this.data.currentCategory)
+        });
+    },
+
+    // 加载最近使用记录
+    loadRecentUses() {
+        const recentUses = storage.getRecentUses();
+        const favorites = this.data.favorites || [];
+        // 格式化时间并添加收藏状态
+        const formattedUses = recentUses.map(item => ({
+            ...item,
+            relativeTime: this.formatRelativeTime(item.useTime),
+            isFavorite: favorites.indexOf(item.toolId) > -1
+        }));
+        this.setData({
+            recentUses: formattedUses
+        });
+    },
+
+    // 加载收藏的工具列表
+    loadFavoriteTools() {
+        const favorites = storage.getFavorites();
+        const favoriteTools = TOOLS.filter(tool => favorites.indexOf(tool.id) > -1).map(tool => ({
+            ...tool,
+            isFavorite: true
+        }));
+        this.setData({
+            favoriteTools: favoriteTools
+        });
+    },
+
+    // 检查工具是否收藏
+    isFavorite(toolId) {
+        return this.data.favorites.indexOf(toolId) > -1;
+    },
+
+    // 格式化相对时间
+    formatRelativeTime(timestamp) {
+        const now = Date.now();
+        const diff = now - timestamp;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) {
+            return '刚刚';
+        } else if (minutes < 60) {
+            return `${minutes}分钟前`;
+        } else if (hours < 24) {
+            return `${hours}小时前`;
+        } else if (days < 7) {
+            return `${days}天前`;
+        } else {
+            const date = new Date(timestamp);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${month}月${day}日`;
+        }
     }
 });

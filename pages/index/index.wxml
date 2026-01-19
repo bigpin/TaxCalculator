@@ -6,20 +6,20 @@
         <image class="app-icon" src="/assets/TDesignLogo@2x.png" mode="aspectFit" />
         <view class="header-text">
           <view class="header-title">Max的工具宝藏</view>
-    <view class="header-subtitle">便捷工具，触手可及</view>
+          <view class="header-subtitle">便捷工具，触手可及</view>
         </view>
       </view>
       <view class="header-actions">
         <button class="header-icon-btn" open-type="share">
-          <t-icon name="share" size="48rpx" color="#fff" />
+          <t-icon name="share" size="40rpx" color="#fff" />
         </button>
-        <view class="header-icon-btn" bindtap="toggleSearch">
-          <t-icon name="search" size="48rpx" color="#fff" />
+        <view class="header-icon-btn" bindtap="toggleSearch" wx:if="{{currentTab === 'tools'}}">
+          <t-icon name="search" size="40rpx" color="#fff" />
         </view>
       </view>
     </view>
     <!-- 搜索框 -->
-    <view class="search-box {{showSearch ? 'show' : ''}}">
+    <view class="search-box {{showSearch ? 'show' : ''}}" wx:if="{{currentTab === 'tools'}}">
       <t-search
         placeholder="搜索工具..."
         value="{{searchValue}}"
@@ -30,59 +30,160 @@
     </view>
   </view>
 
-  <!-- 分类筛选 -->
-  <view class="category-filter">
-    <view 
-      class="category-item {{currentCategory === '' ? 'active' : ''}}"
-      data-category=""
-      bindtap="onCategoryChange"
-    >
-      全部
-    </view>
-    <view 
-      wx:for="{{categories}}" 
-      wx:key="*this"
-      class="category-item {{currentCategory === item ? 'active' : ''}}"
-      data-category="{{item}}"
-      bindtap="onCategoryChange"
-    >
-      {{categoryNames[item]}}
-    </view>
-  </view>
-
-  <!-- 工具列表 -->
-  <view class="tools-list">
-    <view 
-      wx:for="{{filteredTools}}" 
-      wx:key="id"
-      class="tool-card"
-      data-index="{{index}}"
-      bindtap="onToolTap"
-    >
-      <view class="tool-icon">
-        <t-icon name="{{item.icon}}" size="48rpx" color="#0052d9" />
+  <!-- 工具箱Tab内容 -->
+  <view wx:if="{{currentTab === 'tools'}}">
+    <!-- 分类筛选 -->
+    <view class="category-filter">
+      <view 
+        class="category-item {{currentCategory === '' ? 'active-all' : ''}}"
+        data-category=""
+        bindtap="onCategoryChange"
+      >
+        全部
       </view>
-      <view class="tool-info">
-        <view class="tool-name">{{item.name}}</view>
-        <view class="tool-desc">{{item.description}}</view>
-        <view class="tool-category">
-          <t-tag theme="primary" variant="light" size="small">{{categoryNames[item.category]}}</t-tag>
+      <view 
+        wx:for="{{categories}}" 
+        wx:key="*this"
+        class="category-item {{currentCategory === item ? 'active-' + item : ''}}"
+        data-category="{{item}}"
+        bindtap="onCategoryChange"
+      >
+        {{categoryNames[item]}}
+      </view>
+    </view>
+
+    <!-- 工具列表 -->
+    <view class="tools-list">
+      <view 
+        wx:for="{{filteredTools}}" 
+        wx:key="id"
+        class="tool-card"
+        data-index="{{index}}"
+        bindtap="onToolTap"
+      >
+        <!-- 收藏标记 -->
+        <view class="favorite-icon" catchtap="onFavoriteTap" data-tool-id="{{item.id}}">
+          <t-icon name="{{item.isFavorite ? 'star-filled' : 'star'}}" 
+                  size="40rpx" 
+                  color="{{item.isFavorite ? '#ffd700' : '#ccc'}}" />
+        </view>
+        <view class="tool-icon icon-{{item.category}}">
+          <t-icon name="{{item.icon}}" size="48rpx" color="{{item.category === 'finance' ? '#0052d9' : item.category === 'image' ? '#ed7b2f' : item.category === 'life' ? '#00a870' : '#666'}}" />
+        </view>
+        <view class="tool-info">
+          <view class="tool-name">{{item.name}}</view>
+          <view class="tool-desc">{{item.description}}</view>
+          <view class="tool-category">
+            <view class="category-tag tag-{{item.category}}">{{categoryNames[item.category]}}</view>
+          </view>
+        </view>
+        <view class="tool-arrow">
+          <t-icon name="chevron-right" size="40rpx" color="#bbb" />
         </view>
       </view>
-      <view class="tool-arrow">
-        <t-icon name="chevron-right" size="40rpx" color="#bbb" />
-      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{filteredTools.length === 0}}" class="empty-state">
+      <t-icon name="inbox" size="120rpx" color="#ccc" />
+      <text class="empty-text">暂无工具</text>
     </view>
   </view>
 
-  <!-- 空状态 -->
-  <view wx:if="{{filteredTools.length === 0}}" class="empty-state">
-    <t-icon name="inbox" size="120rpx" color="#ccc" />
-    <text class="empty-text">暂无工具</text>
+  <!-- 最近使用Tab内容 -->
+  <view wx:if="{{currentTab === 'recent'}}">
+    <view class="tools-list">
+      <view 
+        wx:for="{{recentUses}}" 
+        wx:key="toolId"
+        class="tool-card"
+        data-index="{{index}}"
+        bindtap="onToolTap"
+      >
+        <!-- 收藏标记 -->
+        <view class="favorite-icon" catchtap="onFavoriteTap" data-tool-id="{{item.toolInfo.id}}">
+          <t-icon name="{{item.isFavorite ? 'star-filled' : 'star'}}" 
+                  size="40rpx" 
+                  color="{{item.isFavorite ? '#ffd700' : '#ccc'}}" />
+        </view>
+        <view class="tool-icon icon-{{item.toolInfo.category}}">
+          <t-icon name="{{item.toolInfo.icon}}" size="48rpx" color="{{item.toolInfo.category === 'finance' ? '#0052d9' : item.toolInfo.category === 'image' ? '#ed7b2f' : item.toolInfo.category === 'life' ? '#00a870' : '#666'}}" />
+        </view>
+        <view class="tool-info">
+          <view class="tool-name">{{item.toolInfo.name}}</view>
+          <view class="tool-desc">{{item.toolInfo.description}}</view>
+          <view class="tool-meta">
+            <view class="tool-category">
+              <view class="category-tag tag-{{item.toolInfo.category}}">{{categoryNames[item.toolInfo.category]}}</view>
+            </view>
+            <view class="tool-time">{{item.relativeTime}}</view>
+          </view>
+        </view>
+        <view class="tool-arrow">
+          <t-icon name="chevron-right" size="40rpx" color="#bbb" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{recentUses.length === 0}}" class="empty-state">
+      <t-icon name="time" size="120rpx" color="#ccc" />
+      <text class="empty-text">暂无最近使用记录</text>
+    </view>
   </view>
 
-  <!-- 底部版权 -->
-  <view class="footer">
-    <text>Max的工具宝藏 v1.0</text>
+  <!-- 我的Tab内容 -->
+  <view wx:if="{{currentTab === 'my'}}">
+    <view class="tools-list">
+      <view 
+        wx:for="{{favoriteTools}}" 
+        wx:key="id"
+        class="tool-card"
+        data-index="{{index}}"
+        bindtap="onToolTap"
+      >
+        <!-- 收藏标记 -->
+        <view class="favorite-icon" catchtap="onFavoriteTap" data-tool-id="{{item.id}}">
+          <t-icon name="star-filled" size="40rpx" color="#ffd700" />
+        </view>
+        <view class="tool-icon icon-{{item.category}}">
+          <t-icon name="{{item.icon}}" size="48rpx" color="{{item.category === 'finance' ? '#0052d9' : item.category === 'image' ? '#ed7b2f' : item.category === 'life' ? '#00a870' : '#666'}}" />
+        </view>
+        <view class="tool-info">
+          <view class="tool-name">{{item.name}}</view>
+          <view class="tool-desc">{{item.description}}</view>
+          <view class="tool-category">
+            <view class="category-tag tag-{{item.category}}">{{categoryNames[item.category]}}</view>
+          </view>
+        </view>
+        <view class="tool-arrow">
+          <t-icon name="chevron-right" size="40rpx" color="#bbb" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{favoriteTools.length === 0}}" class="empty-state">
+      <t-icon name="star" size="120rpx" color="#ccc" />
+      <text class="empty-text">暂无收藏的工具</text>
+    </view>
+  </view>
+
+  <!-- 底部导航栏 -->
+  <view class="tab-bar-container">
+    <view class="custom-tab-bar">
+      <view class="tab-item {{currentTab === 'tools' ? 'active' : ''}}" data-tab="tools" bindtap="onTabItemTap">
+        <t-icon name="app" size="48rpx" color="{{currentTab === 'tools' ? '#0052d9' : '#666'}}" />
+        <text class="tab-text">工具箱</text>
+      </view>
+      <view class="tab-item {{currentTab === 'recent' ? 'active' : ''}}" data-tab="recent" bindtap="onTabItemTap">
+        <t-icon name="time" size="48rpx" color="{{currentTab === 'recent' ? '#0052d9' : '#666'}}" />
+        <text class="tab-text">最近使用</text>
+      </view>
+      <view class="tab-item {{currentTab === 'my' ? 'active' : ''}}" data-tab="my" bindtap="onTabItemTap">
+        <t-icon name="user" size="48rpx" color="{{currentTab === 'my' ? '#0052d9' : '#666'}}" />
+        <text class="tab-text">我的</text>
+      </view>
+    </view>
   </view>
 </view>

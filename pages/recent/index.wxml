@@ -1,0 +1,71 @@
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="header">
+    <view class="header-row">
+      <view class="header-left">
+        <view class="header-text">
+          <view class="header-title">最近使用</view>
+          <view class="header-subtitle">查看最近使用的工具</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 工具列表 -->
+  <view class="tools-list">
+    <view 
+      wx:for="{{recentUses}}" 
+      wx:key="toolId"
+      class="tool-card"
+      data-index="{{index}}"
+      bindtap="onToolTap"
+    >
+      <!-- 收藏标记 -->
+      <view class="favorite-icon" catchtap="onFavoriteTap" data-tool-id="{{item.toolInfo.id}}">
+        <t-icon name="{{favorites.indexOf(item.toolInfo.id) > -1 ? 'star-filled' : 'star'}}" 
+                size="40rpx" 
+                color="{{favorites.indexOf(item.toolInfo.id) > -1 ? '#ffd700' : '#ccc'}}" />
+      </view>
+      <view class="tool-icon">
+        <t-icon name="{{item.toolInfo.icon}}" size="48rpx" color="#0052d9" />
+      </view>
+      <view class="tool-info">
+        <view class="tool-name">{{item.toolInfo.name}}</view>
+        <view class="tool-desc">{{item.toolInfo.description}}</view>
+        <view class="tool-meta">
+          <view class="tool-category">
+            <view class="category-tag tag-{{item.toolInfo.category}}">{{categoryNames[item.toolInfo.category]}}</view>
+          </view>
+          <view class="tool-time">{{item.relativeTime}}</view>
+        </view>
+      </view>
+      <view class="tool-arrow">
+        <t-icon name="chevron-right" size="40rpx" color="#bbb" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{recentUses.length === 0}}" class="empty-state">
+    <t-icon name="time" size="120rpx" color="#ccc" />
+    <text class="empty-text">暂无最近使用记录</text>
+  </view>
+
+  <!-- 底部导航栏 -->
+  <view class="tab-bar-container">
+    <view class="custom-tab-bar">
+      <view class="tab-item" data-tab="tools" bindtap="onTabItemTap">
+        <t-icon name="app" size="48rpx" color="#666" />
+        <text class="tab-text">工具箱</text>
+      </view>
+      <view class="tab-item active" data-tab="recent" bindtap="onTabItemTap">
+        <t-icon name="time" size="48rpx" color="#0052d9" />
+        <text class="tab-text">最近使用</text>
+      </view>
+      <view class="tab-item" data-tab="my" bindtap="onTabItemTap">
+        <t-icon name="user" size="48rpx" color="#666" />
+        <text class="tab-text">我的</text>
+      </view>
+    </view>
+  </view>
+</view>
