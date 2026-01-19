@@ -3,11 +3,36 @@ const dateUtils = require('../../../utils/dateUtils');
 
 // 纪念日类型配置
 const TYPE_CONFIG = {
-  birthday: { name: '生日', theme: 'primary' },
-  anniversary: { name: '恋爱纪念日', theme: 'danger' },
-  payment: { name: '还款日', theme: 'warning' },
-  holiday: { name: '节日', theme: 'success' },
-  custom: { name: '自定义', theme: 'default' }
+  birthday: { 
+    name: '生日', 
+    typeName: '生日',
+    iconName: 'user',
+    iconColor: '#e34d59'
+  },
+  anniversary: { 
+    name: '恋爱纪念日', 
+    typeName: '纪念日',
+    iconName: 'heart',
+    iconColor: '#1a5d6a'
+  },
+  payment: { 
+    name: '还款日', 
+    typeName: '财务',
+    iconName: 'wallet',
+    iconColor: '#ff8800'
+  },
+  holiday: { 
+    name: '节日', 
+    typeName: '节日',
+    iconName: 'gift',
+    iconColor: '#00a870'
+  },
+  custom: { 
+    name: '自定义', 
+    typeName: '其他',
+    iconName: 'bookmark',
+    iconColor: '#9c27b0'
+  }
 };
 
 // 获取云数据库引用
@@ -16,10 +41,12 @@ const db = wx.cloud.database();
 Page({
   data: {
     anniversaryList: [],
+    displayList: [],
+    currentTab: 'upcoming', // upcoming, past, all
     showActionSheet: false,
     showDeleteDialog: false,
-    currentItem: null, // 当前选中的纪念日
-    showTestButton: true, // 是否显示测试按钮（开发调试用）
+    currentItem: null,
+    showTestButton: true,
     loading: false
   },
 
@@ -28,18 +55,61 @@ Page({
   },
 
   onShow() {
-    // 每次显示页面时重新加载数据（可能从编辑页返回）
     this.loadAnniversaryList();
   },
 
   /**
-   * 从云端加载纪念日列表，同步到本地缓存
+   * 返回上一页
+   */
+  goBack() {
+    wx.navigateBack({
+      fail: () => {
+        wx.switchTab({
+          url: '/pages/index/index'
+        });
+      }
+    });
+  },
+
+  /**
+   * 切换Tab
+   */
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab;
+    this.setData({ currentTab: tab });
+    this.filterList();
+  },
+
+  /**
+   * 根据Tab过滤列表
+   */
+  filterList() {
+    const { anniversaryList, currentTab } = this.data;
+    let displayList = [];
+    
+    switch (currentTab) {
+      case 'upcoming':
+        displayList = anniversaryList.filter(item => !item.isPast || item.isToday);
+        break;
+      case 'past':
+        displayList = anniversaryList.filter(item => item.isPast && !item.isToday);
+        break;
+      case 'all':
+      default:
+        displayList = anniversaryList;
+        break;
+    }
+    
+    this.setData({ displayList });
+  },
+
+  /**
+   * 从云端加载纪念日列表
    */
   async loadAnniversaryList() {
     this.setData({ loading: true });
     
     try {
-      // 优先从云端加载
       let list = [];
       try {
         const res = await db.collection('anniversary')
@@ -47,17 +117,15 @@ Page({
           .get();
         list = res.data || [];
         
-        // 同步到本地缓存
         const localList = list.map(item => ({
           ...item,
-          id: item._id // 兼容旧字段
+          id: item._id
         }));
         wx.setStorageSync('anniversaryList', localList);
         
         console.log('从云端加载成功，共', list.length, '条记录');
       } catch (cloudErr) {
         console.log('云端加载失败，使用本地缓存:', cloudErr);
-        // 云端失败，使用本地缓存
         list = wx.getStorageSync('anniversaryList') || [];
       }
       
@@ -66,6 +134,7 @@ Page({
         anniversaryList: processedList,
         loading: false
       });
+      this.filterList();
     } catch (error) {
       console.error('加载纪念日列表失败:', error);
       this.setData({ loading: false });
@@ -77,7 +146,7 @@ Page({
   },
 
   /**
-   * 处理纪念日列表：计算天数、排序、格式化显示
+   * 处理纪念日列表
    */
   processAnniversaryList(list) {
     const today = new Date();
@@ -85,14 +154,30 @@ Page({
       const result = dateUtils.calculateDaysDifference(item.date, today);
       const typeConfig = TYPE_CONFIG[item.type] || TYPE_CONFIG.custom;
       
-      // 生成显示文本
-      let daysText = '';
+      // 计算badge类型
+      let badgeType = 'normal';
       if (result.isToday) {
-        daysText = '今天';
+        badgeType = 'today';
       } else if (result.isPast) {
-        daysText = `已过去 ${result.days} 天`;
-      } else {
-        daysText = `还有 ${result.days} 天`;
+        badgeType = 'past';
+      } else if (result.days <= 5) {
+        badgeType = 'urgent';
+      } else if (result.days <= 14) {
+        badgeType = 'soon';
+      }
+
+      // 计算进度（对于年度重复事件）
+      let showProgress = false;
+      let progressPercent = 0;
+      if (item.isYearly && !result.isPast) {
+        showProgress = true;
+        // 计算年度进度
+        const startOfYear = new Date(today.getFullYear(), 0, 1);
+        const targetDate = new Date(item.date);
+        targetDate.setFullYear(today.getFullYear());
+        const totalDays = Math.floor((targetDate - startOfYear) / (1000 * 60 * 60 * 24));
+        const passedDays = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24));
+        progressPercent = Math.min(100, Math.max(0, (passedDays / totalDays) * 100));
       }
 
       // 生成提醒设置文本
@@ -111,20 +196,23 @@ Page({
         days: result.days,
         isPast: result.isPast,
         isToday: result.isToday,
-        daysText: daysText,
         displayDate: dateUtils.getFriendlyDateText(item.date),
-        typeName: typeConfig.name,
-        typeTheme: typeConfig.theme,
+        typeName: typeConfig.typeName,
+        iconName: typeConfig.iconName,
+        iconColor: typeConfig.iconColor,
+        badgeType: badgeType,
+        showProgress: showProgress,
+        progressPercent: progressPercent,
         remindText: remindText
       };
     });
 
-    // 按剩余天数排序：未过期的按天数升序，已过期的排在后面
+    // 排序
     processed.sort((a, b) => {
       if (a.isPast && !b.isPast) return 1;
       if (!a.isPast && b.isPast) return -1;
-      if (a.isPast && b.isPast) return b.days - a.days; // 已过期的按天数降序
-      return a.days - b.days; // 未过期的按天数升序
+      if (a.isPast && b.isPast) return b.days - a.days;
+      return a.days - b.days;
     });
 
     return processed;
@@ -169,7 +257,6 @@ Page({
     });
     
     if (this.data.currentItem) {
-      // 使用云端ID
       const id = this.data.currentItem._id || this.data.currentItem.id;
       wx.navigateTo({
         url: `/pages/tools/anniversary/add?id=${id}`
@@ -202,7 +289,6 @@ Page({
     const cloudId = item._id || item.id;
 
     try {
-      // 删除云端数据
       try {
         await db.collection('anniversary').doc(cloudId).remove();
         console.log('云端删除成功');
@@ -210,7 +296,6 @@ Page({
         console.log('云端删除失败:', cloudErr);
       }
 
-      // 删除本地数据
       const list = wx.getStorageSync('anniversaryList') || [];
       const newList = list.filter(i => i._id !== cloudId && i.id !== cloudId);
       wx.setStorageSync('anniversaryList', newList);
@@ -225,7 +310,6 @@ Page({
         currentItem: null
       });
 
-      // 重新加载列表
       this.loadAnniversaryList();
     } catch (error) {
       console.error('删除失败:', error);
@@ -259,24 +343,21 @@ Page({
    * 检查并发送订阅消息通知
    */
   checkAndSendNotification() {
-    // 请求订阅消息权限
     wx.requestSubscribeMessage({
       tmplIds: ['_sxu2b5a-gmqPcBSbtJVn3sdJy7r70qkkaKEynCQVxY'],
       success: (res) => {
         console.log('订阅消息授权结果:', res);
-        // 检查需要发送通知的纪念日
         this.sendNotifications();
       },
       fail: (err) => {
         console.log('订阅消息授权失败:', err);
-        // 即使授权失败，也检查通知（用户可能之前已授权）
         this.sendNotifications();
       }
     });
   },
 
   /**
-   * 发送通知（使用用户配置的提醒频率）
+   * 发送通知
    */
   sendNotifications() {
     try {
@@ -285,9 +366,8 @@ Page({
       
       list.forEach(item => {
         const result = dateUtils.calculateDaysDifference(item.date, today);
-        const remindDays = item.remindDays || [7, 3, 1]; // 默认提醒频率
+        const remindDays = item.remindDays || [7, 3, 1];
         
-        // 检查是否匹配用户配置的提醒频率
         if (!result.isPast && remindDays.includes(result.days)) {
           this.sendNotificationMessage(item, result.days);
         }
@@ -298,7 +378,7 @@ Page({
   },
 
   /**
-   * 测试推送消息（开发调试用）
+   * 测试推送消息
    */
   testNotification() {
     wx.showModal({
@@ -306,21 +386,18 @@ Page({
       content: '将发送一条测试推送消息，请确保已配置云开发',
       success: (res) => {
         if (res.confirm) {
-          // 创建一个测试纪念日
           const testItem = {
             id: 'test_' + Date.now(),
             name: '测试纪念日',
-            date: dateUtils.formatDate(new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)), // 明天
+            date: dateUtils.formatDate(new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)),
             type: 'custom',
             note: '测试用'
           };
           
-          // 请求订阅消息权限
           wx.requestSubscribeMessage({
             tmplIds: ['_sxu2b5a-gmqPcBSbtJVn3sdJy7r70qkkaKEynCQVxY'],
             success: (res) => {
               console.log('订阅消息授权结果:', res);
-              // 直接调用推送方法
               this.sendNotificationMessage(testItem, 1);
               wx.showToast({
                 title: '测试推送已发送',
@@ -344,23 +421,19 @@ Page({
    * 发送订阅消息
    */
   sendNotificationMessage(item, daysLeft) {
-    // 检查是否已发送过通知（避免重复发送）
     const notificationKey = `notification_${item.id}_${daysLeft}`;
     const lastNotification = wx.getStorageSync(notificationKey);
     const today = dateUtils.formatDate(new Date());
     
     if (lastNotification === today) {
-      // 今天已发送过，不再发送
       return;
     }
 
-    // 检查是否已初始化云开发
     if (typeof wx.cloud === 'undefined') {
       console.log('云开发未初始化，跳过订阅消息发送');
       return;
     }
 
-    // 调用云函数发送订阅消息
     wx.cloud.callFunction({
       name: 'sendAnniversaryMsg',
       data: {
@@ -380,14 +453,12 @@ Page({
             title: '推送发送成功',
             icon: 'success'
           });
-          // 记录已发送
           wx.setStorageSync(notificationKey, today);
         } else {
           console.error('订阅消息发送失败:', res.result);
           const errorMsg = res.result.error || res.result.errorCode || '发送失败';
           const errorDetail = res.result.errorDetail;
           
-          // 显示详细错误信息
           let displayMsg = errorMsg;
           if (errorDetail && errorDetail.errCode) {
             displayMsg = `${errorMsg} (错误码: ${errorDetail.errCode})`;

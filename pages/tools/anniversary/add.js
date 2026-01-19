@@ -3,11 +3,31 @@ const dateUtils = require('../../../utils/dateUtils');
 
 // 纪念日类型配置
 const TYPE_CONFIG = {
-  birthday: { name: '生日', theme: 'primary' },
-  anniversary: { name: '恋爱纪念日', theme: 'danger' },
-  payment: { name: '还款日', theme: 'warning' },
-  holiday: { name: '节日', theme: 'success' },
-  custom: { name: '自定义', theme: 'default' }
+  birthday: { 
+    name: '生日',
+    icon: 'user',
+    color: '#e34d59'
+  },
+  anniversary: { 
+    name: '纪念日',
+    icon: 'heart',
+    color: '#1a5d6a'
+  },
+  payment: { 
+    name: '还款日',
+    icon: 'wallet',
+    color: '#ff8800'
+  },
+  holiday: { 
+    name: '节日',
+    icon: 'gift',
+    color: '#00a870'
+  },
+  custom: { 
+    name: '其他',
+    icon: 'bookmark',
+    color: '#9c27b0'
+  }
 };
 
 // 提醒频率选项
@@ -25,21 +45,18 @@ Page({
   data: {
     isEdit: false,
     editId: null,
-    cloudId: null, // 云数据库记录ID
+    cloudId: null,
     formData: {
       name: '',
       date: '',
       type: 'birthday',
       typeName: '生日',
       note: '',
-      remindDays: [7, 3, 1] // 默认提醒频率
+      remindDays: [7, 3, 1]
     },
     nameError: false,
-    typePickerVisible: false,
-    typeIndex: 0,
-    typeOptions: [],
+    typeList: [],
     remindOptions: REMIND_OPTIONS,
-    // 预计算的选中状态
     remindSelected: {
       7: true,
       3: true,
@@ -51,14 +68,16 @@ Page({
   },
 
   onLoad(options) {
-    // 生成类型选项
-    const typeOptions = Object.keys(TYPE_CONFIG).map((key, index) => ({
+    // 生成类型列表
+    const typeList = Object.keys(TYPE_CONFIG).map(key => ({
+      value: key,
       label: TYPE_CONFIG[key].name,
-      value: key
+      icon: TYPE_CONFIG[key].icon,
+      color: TYPE_CONFIG[key].color
     }));
     
     this.setData({
-      typeOptions: typeOptions,
+      typeList: typeList,
       minDate: dateUtils.formatDate(new Date('1900-01-01'))
     });
 
@@ -73,11 +92,17 @@ Page({
   },
 
   /**
+   * 返回上一页
+   */
+  goBack() {
+    wx.navigateBack();
+  },
+
+  /**
    * 加载要编辑的纪念日数据
    */
   async loadAnniversaryData(id) {
     try {
-      // 优先从云端加载
       let item = null;
       try {
         const res = await db.collection('anniversary').doc(id).get();
@@ -89,18 +114,12 @@ Page({
         console.log('云端加载失败，尝试本地:', cloudErr);
       }
 
-      // 云端没有则从本地加载
       if (!item) {
         const list = wx.getStorageSync('anniversaryList') || [];
         item = list.find(i => i.id === id || i._id === id);
       }
       
       if (item) {
-        // 找到对应的类型索引
-        const typeKeys = Object.keys(TYPE_CONFIG);
-        const typeIndex = typeKeys.indexOf(item.type);
-        
-        // 计算选中状态
         const remindDays = item.remindDays || [7, 3, 1];
         const remindSelected = {
           7: remindDays.includes(7),
@@ -115,10 +134,9 @@ Page({
             date: item.date,
             type: item.type,
             note: item.note || '',
-            typeName: TYPE_CONFIG[item.type] ? TYPE_CONFIG[item.type].name : '自定义',
+            typeName: TYPE_CONFIG[item.type] ? TYPE_CONFIG[item.type].name : '其他',
             remindDays: remindDays
           },
-          typeIndex: typeIndex >= 0 ? typeIndex : 0,
           remindSelected: remindSelected
         });
       } else {
@@ -161,39 +179,15 @@ Page({
   },
 
   /**
-   * 类型选择器点击
+   * 类型选择
    */
-  onTypePickerClick() {
-    this.setData({
-      typePickerVisible: true
-    });
-  },
-
-  /**
-   * 类型改变
-   */
-  onTypeChange(e) {
-    const selectedValue = e.detail.value[0]; // 这是选项的 value 值，如 'birthday'
-    const typeConfig = TYPE_CONFIG[selectedValue];
-    
-    // 找到对应的索引
-    const typeKeys = Object.keys(TYPE_CONFIG);
-    const typeIndex = typeKeys.indexOf(selectedValue);
+  onTypeSelect(e) {
+    const value = e.currentTarget.dataset.value;
+    const typeConfig = TYPE_CONFIG[value];
     
     this.setData({
-      typeIndex: typeIndex >= 0 ? typeIndex : 0,
-      'formData.type': selectedValue,
-      'formData.typeName': typeConfig ? typeConfig.name : '自定义',
-      typePickerVisible: false
-    });
-  },
-
-  /**
-   * 类型选择器取消
-   */
-  onTypePickerCancel() {
-    this.setData({
-      typePickerVisible: false
+      'formData.type': value,
+      'formData.typeName': typeConfig ? typeConfig.name : '其他'
     });
   },
 
@@ -216,16 +210,13 @@ Page({
     const index = remindDays.indexOf(value);
     
     if (index > -1) {
-      // 已选中，取消选择
       remindDays.splice(index, 1);
       remindSelected[value] = false;
     } else {
-      // 未选中，添加选择
       remindDays.push(value);
       remindSelected[value] = true;
     }
     
-    // 排序，保持顺序一致
     remindDays.sort((a, b) => b - a);
     
     this.setData({
@@ -238,10 +229,11 @@ Page({
    * 保存
    */
   async onSave() {
-    // 验证表单
     if (!this.validateForm()) {
       return;
     }
+
+    if (this.data.saving) return;
 
     this.setData({ saving: true });
 
@@ -249,26 +241,23 @@ Page({
       const formData = this.data.formData;
       const now = Date.now();
 
-      // 构建数据对象
       const anniversaryData = {
         name: formData.name,
         date: formData.date,
         type: formData.type,
         note: formData.note,
         remindDays: formData.remindDays,
-        notified: {}, // 已发送记录
+        notified: {},
         updatedAt: now
       };
 
       let cloudId = this.data.cloudId;
 
       if (this.data.isEdit && cloudId) {
-        // 编辑模式：更新云数据库
         await db.collection('anniversary').doc(cloudId).update({
           data: anniversaryData
         });
       } else {
-        // 添加模式：新增到云数据库
         anniversaryData.createdAt = now;
         const addRes = await db.collection('anniversary').add({
           data: anniversaryData
@@ -276,11 +265,10 @@ Page({
         cloudId = addRes._id;
       }
 
-      // 同步到本地存储
       const localData = {
         ...anniversaryData,
         _id: cloudId,
-        id: cloudId // 兼容旧字段
+        id: cloudId
       };
       
       const list = wx.getStorageSync('anniversaryList') || [];
@@ -294,7 +282,6 @@ Page({
       
       wx.setStorageSync('anniversaryList', list);
 
-      // 请求订阅消息授权
       this.requestSubscribeAuth();
 
       wx.showToast({
@@ -302,7 +289,6 @@ Page({
         icon: 'success'
       });
 
-      // 延迟返回，让用户看到成功提示
       setTimeout(() => {
         wx.navigateBack();
       }, 1500);
@@ -310,7 +296,7 @@ Page({
     } catch (error) {
       console.error('保存失败:', error);
       wx.showToast({
-        title: '保存失败: ' + (error.message || '未知错误'),
+        title: '保存失败',
         icon: 'none',
         duration: 3000
       });

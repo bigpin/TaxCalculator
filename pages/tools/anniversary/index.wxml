@@ -1,62 +1,100 @@
 <view class="container">
+  <!-- 顶部标题栏 -->
+  <view class="header">
+    <view class="header-left">
+      <view class="back-btn" bindtap="goBack">
+        <t-icon name="chevron-left" size="48rpx" color="#1a3a47" />
+      </view>
+      <t-icon name="calendar" size="44rpx" color="#1a5d6a" />
+      <text class="header-title">纪念日</text>
+    </view>
+  </view>
+
+  <!-- Tab切换 -->
+  <view class="tab-bar">
+    <view 
+      class="tab-item {{currentTab === 'upcoming' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="upcoming"
+    >
+      <text>即将到来</text>
+    </view>
+    <view 
+      class="tab-item {{currentTab === 'past' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="past"
+    >
+      <text>已过去</text>
+    </view>
+    <view 
+      class="tab-item {{currentTab === 'all' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="all"
+    >
+      <text>全部</text>
+    </view>
+  </view>
+
   <!-- 空状态 -->
-  <view wx:if="{{anniversaryList.length === 0}}" class="empty-state">
-    <t-icon name="calendar" size="120rpx" color="#ccc" />
+  <view wx:if="{{displayList.length === 0}}" class="empty-state">
+    <view class="empty-icon">
+      <t-icon name="calendar" size="100rpx" color="#b8c9d0" />
+    </view>
     <text class="empty-text">还没有纪念日</text>
     <text class="empty-desc">点击右下角按钮添加第一个纪念日</text>
   </view>
 
   <!-- 纪念日列表 -->
-  <view wx:else class="anniversary-list">
+  <scroll-view 
+    wx:else 
+    class="anniversary-list" 
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+  >
     <view 
-      wx:for="{{anniversaryList}}" 
+      wx:for="{{displayList}}" 
       wx:key="id"
       class="anniversary-card"
       bindtap="onCardTap"
       data-item="{{item}}"
     >
-      <view class="card-header">
-        <view class="card-title">{{item.name}}</view>
-        <t-tag 
-          theme="{{item.typeTheme}}" 
-          variant="light" 
-          size="small"
-        >
-          {{item.typeName}}
-        </t-tag>
+      <!-- 左侧图标 -->
+      <view class="card-icon {{item.type}}">
+        <t-icon name="{{item.iconName}}" size="44rpx" color="{{item.iconColor}}" />
       </view>
       
+      <!-- 中间内容 -->
       <view class="card-content">
-        <view class="date-info">
-          <t-icon name="calendar" size="32rpx" color="#666" />
-          <text class="date-text">{{item.displayDate}}</text>
-        </view>
+        <view class="card-title">{{item.name}}</view>
+        <view class="card-date">{{item.displayDate}}</view>
         
-        <view class="days-info {{item.isToday ? 'today' : ''}} {{item.isPast ? 'past' : 'future'}}">
-          <text class="days-text">{{item.daysText}}</text>
+        <!-- 进度条（仅对年度事件显示） -->
+        <view wx:if="{{item.showProgress}}" class="progress-bar">
+          <view class="progress-fill" style="width: {{item.progressPercent}}%"></view>
         </view>
-      </view>
-
-      <!-- 提醒设置 -->
-      <view wx:if="{{item.remindText}}" class="remind-info">
-        <t-icon name="notification" size="28rpx" color="#999" />
-        <text class="remind-text">{{item.remindText}}</text>
       </view>
       
-      <view wx:if="{{item.note}}" class="card-note">
-        <text class="note-text">{{item.note}}</text>
+      <!-- 右侧信息 -->
+      <view class="card-right">
+        <view class="days-badge {{item.badgeType}}">
+          <text wx:if="{{item.isToday}}">今天</text>
+          <text wx:elif="{{item.isPast}}">{{item.days}}天前</text>
+          <text wx:else>{{item.days}}天后</text>
+        </view>
+        <view class="card-type">{{item.typeName}}</view>
       </view>
     </view>
-  </view>
+  </scroll-view>
 
   <!-- 添加按钮 -->
   <view class="fab-button" bindtap="onAddClick">
-    <t-icon name="add" size="48rpx" color="#fff" />
+    <t-icon name="add" size="56rpx" color="#fff" />
   </view>
 
-  <!-- 测试按钮（开发调试用，正式版可删除） -->
+  <!-- 测试按钮（开发调试用） -->
   <view class="test-button" bindtap="testNotification" wx:if="{{showTestButton}}">
-    <t-icon name="notification" size="32rpx" color="#0052d9" />
+    <t-icon name="notification" size="32rpx" color="#1a5d6a" />
     <text class="test-text">测试推送</text>
   </view>
 
@@ -67,12 +105,16 @@
     bind:visible-change="onActionSheetChange"
   >
     <view class="action-sheet">
+      <view class="action-header">
+        <text class="action-title">{{currentItem.name}}</text>
+        <text class="action-subtitle">{{currentItem.displayDate}}</text>
+      </view>
       <view class="action-item" bindtap="onEditClick">
-        <t-icon name="edit" size="40rpx" color="#0052d9" />
+        <t-icon name="edit" size="40rpx" color="#1a5d6a" />
         <text>编辑</text>
       </view>
       <view class="action-item danger" bindtap="onDeleteClick">
-        <t-icon name="delete" size="40rpx" color="#ff4444" />
+        <t-icon name="delete" size="40rpx" color="#e34d59" />
         <text>删除</text>
       </view>
       <view class="action-item cancel" bindtap="onCancelAction">
