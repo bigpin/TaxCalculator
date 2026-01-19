@@ -24,6 +24,16 @@
       "name": "checkAt8pm",
       "type": "timer",
       "config": "0 0 20 * * * *"
+    },
+    {
+      "name": "checkAt8pm",
+      "type": "timer",
+      "config": "0 0 21 * * * *"
+    },
+    {
+      "name": "checkAt8pm",
+      "type": "timer",
+      "config": "0 0 22 * * * *"
     }
   ]
 }
