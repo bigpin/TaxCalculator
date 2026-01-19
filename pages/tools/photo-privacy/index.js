@@ -12,7 +12,12 @@ Page({
         hasPrivacyInfo: false,
         processing: false,
         processedPath: '',
-        showResult: false
+        showResult: false,
+        riskStatus: {
+            location: false,
+            device: false,
+            datetime: false
+        }
     },
 
     onLoad() {
@@ -33,7 +38,12 @@ Page({
                     showResult: false,
                     exifData: null,
                     exifItems: [],
-                    hasPrivacyInfo: false
+                    hasPrivacyInfo: false,
+                    riskStatus: {
+                        location: false,
+                        device: false,
+                        datetime: false
+                    }
                 });
                 
                 // 获取图片信息和 EXIF
@@ -58,13 +68,27 @@ Page({
             
             // 构建显示项
             const exifItems = this.buildExifItems(imageInfo, exifData);
-            const hasPrivacyInfo = exifItems.some(item => item.hasValue);
+            const hasPrivacyInfo = exifItems.some(item => item.hasValue && item.type !== 'size');
+            
+            // 构建风险状态
+            const riskStatus = {
+                location: !!(exifData && exifData.hasGPS),
+                device: !!(exifData && exifData.hasDevice),
+                datetime: !!(exifData && exifData.hasDateTime)
+            };
+            
+            console.log('EXIF分析结果:', {
+                exifData: exifData,
+                riskStatus: riskStatus,
+                hasPrivacyInfo: hasPrivacyInfo
+            });
             
             this.setData({
                 imageInfo,
                 exifData,
                 exifItems,
-                hasPrivacyInfo
+                hasPrivacyInfo,
+                riskStatus
             });
         } catch (e) {
             console.error('分析图片失败:', e);
@@ -361,6 +385,36 @@ Page({
         }
     },
 
+    // 分享图片给好友
+    shareImage() {
+        if (!this.data.processedPath) {
+            wx.showToast({
+                title: '请先处理图片',
+                icon: 'none'
+            });
+            return;
+        }
+
+        wx.shareFileMessage({
+            filePath: this.data.processedPath,
+            fileName: '安全图片.jpg',
+            success: () => {
+                wx.showToast({
+                    title: '分享成功',
+                    icon: 'success'
+                });
+            },
+            fail: (err) => {
+                console.error('分享失败:', err);
+                // 如果 shareFileMessage 不支持，尝试使用 previewImage 让用户手动分享
+                wx.previewImage({
+                    urls: [this.data.processedPath],
+                    current: this.data.processedPath
+                });
+            }
+        });
+    },
+
     // 重新选择
     reset() {
         this.setData({
@@ -371,7 +425,12 @@ Page({
             hasPrivacyInfo: false,
             processing: false,
             processedPath: '',
-            showResult: false
+            showResult: false,
+            riskStatus: {
+                location: false,
+                device: false,
+                datetime: false
+            }
         });
     }
 });
