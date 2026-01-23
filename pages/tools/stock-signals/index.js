@@ -872,16 +872,60 @@ Page({
     try {
       // 查询当前用户的订阅记录（数据库会自动根据_openid过滤）
       const res = await db.collection('stock_signals_subscriber')
-        .where({
-          status: 'active'
-        })
         .get();
       
-      this.setData({
-        isSubscribed: res.data && res.data.length > 0
-      });
+      if (res.data && res.data.length > 0) {
+        // 如果有多条记录（理论上不应该发生，但为了安全起见处理一下）
+        if (res.data.length > 1) {
+          console.warn(`发现 ${res.data.length} 条订阅记录，将保留第一条并删除其他记录`);
+          // 保留第一条，删除其他重复记录
+          const keepId = res.data[0]._id;
+          const deletePromises = res.data.slice(1).map(record => 
+            db.collection('stock_signals_subscriber').doc(record._id).remove()
+          );
+          await Promise.all(deletePromises);
+          console.log('已删除重复的订阅记录');
+        }
+        
+        const subscriber = res.data[0];
+        
+        // 检查订阅状态
+        if (subscriber.status === 'active') {
+          this.setData({
+            isSubscribed: true
+          });
+        } else if (subscriber.status === 'inactive') {
+          // 如果订阅状态是失效的，提示用户重新订阅
+          this.setData({
+            isSubscribed: false
+          });
+          
+          // 延迟提示，避免页面加载时立即弹出
+          setTimeout(() => {
+            wx.showModal({
+              title: '订阅已失效',
+              content: subscriber.lastError || '您的订阅状态已失效，可能是订阅授权已过期或在微信设置中关闭了订阅消息。请重新订阅以接收推送通知。',
+              showCancel: true,
+              cancelText: '稍后',
+              confirmText: '重新订阅',
+              success: (modalRes) => {
+                if (modalRes.confirm) {
+                  this.handleSubscribe();
+                }
+              }
+            });
+          }, 1000);
+        }
+      } else {
+        this.setData({
+          isSubscribed: false
+        });
+      }
     } catch (error) {
       console.error('检查订阅状态失败:', error);
+      this.setData({
+        isSubscribed: false
+      });
     }
   },
 
@@ -903,43 +947,77 @@ Page({
       console.log('订阅消息授权结果:', subscribeRes);
       
       // 检查授权结果
-      if (subscribeRes[templateId] === 'reject') {
+      const subscribeStatus = subscribeRes[templateId];
+      console.log(`订阅状态: ${subscribeStatus}`);
+      
+      if (subscribeStatus === 'reject' || subscribeStatus === 'ban') {
+        wx.showModal({
+          title: '订阅失败',
+          content: subscribeStatus === 'ban' 
+            ? '您已在小程序设置中关闭了订阅消息，请在微信小程序设置中重新开启'
+            : '您拒绝了订阅授权，无法接收推送通知',
+          showCancel: false,
+          confirmText: '知道了'
+        });
+        this.setData({ subscribing: false });
+        return;
+      }
+      
+      // 如果用户没有授权（'accept' 以外的状态），也提示
+      if (subscribeStatus !== 'accept') {
+        console.warn('订阅状态异常:', subscribeStatus);
         wx.showToast({
-          title: '需要授权才能订阅',
+          title: '订阅授权异常，请重试',
           icon: 'none'
         });
         this.setData({ subscribing: false });
         return;
       }
       
-      // 2. 检查是否已有订阅记录
+      // 2. 检查是否已有订阅记录（包括失效状态的记录）
+      // 注意：小程序端查询会自动根据当前用户的 _openid 过滤
       const existingRes = await db.collection('stock_signals_subscriber')
-        .where({
-          status: 'active'
-        })
         .get();
       
       const now = new Date();
       
       if (existingRes.data && existingRes.data.length > 0) {
-        // 如果已有记录，更新为活跃状态
+        // 如果有多条记录（理论上不应该发生，但为了安全起见处理一下）
+        if (existingRes.data.length > 1) {
+          console.warn(`发现 ${existingRes.data.length} 条订阅记录，将保留第一条并删除其他记录`);
+          // 保留第一条，删除其他重复记录
+          const keepId = existingRes.data[0]._id;
+          const deletePromises = existingRes.data.slice(1).map(record => 
+            db.collection('stock_signals_subscriber').doc(record._id).remove()
+          );
+          await Promise.all(deletePromises);
+          console.log('已删除重复的订阅记录');
+        }
+        
+        // 更新为活跃状态，清除之前的错误信息
         await db.collection('stock_signals_subscriber')
           .doc(existingRes.data[0]._id)
           .update({
             data: {
               status: 'active',
-              subscribeTime: now
+              subscribeTime: now,
+              lastError: null,
+              lastErrorTime: null
             }
           });
+        console.log('已更新订阅记录为活跃状态');
       } else {
         // 如果没有记录，创建新记录
         await db.collection('stock_signals_subscriber').add({
           data: {
             subscribeTime: now,
             status: 'active',
-            lastNotifiedDate: null
+            lastNotifiedDate: null,
+            lastError: null,
+            lastErrorTime: null
           }
         });
+        console.log('已创建新的订阅记录');
       }
       
       // 3. 更新UI状态

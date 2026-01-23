@@ -23,7 +23,7 @@ const TOOLS = [
     {
         id: 'tax-calculator',
         name: '个税计算器',
-        icon: 'money-circle',
+        icon: 'money',
         category: 'finance',
         description: '计算个人所得税，支持多个月份累计计算',
         path: '/pages/tools/tax-calculator/index'
@@ -90,7 +90,8 @@ Page({
         currentTab: 'tools', // 'tools' | 'recent' | 'my'
         favorites: [], // 收藏的工具ID列表
         recentUses: [], // 最近使用记录
-        favoriteTools: [] // 收藏的工具列表（用于我的Tab）
+        favoriteTools: [], // 收藏的工具列表（用于我的Tab）
+        activeColor: '#0052d9' // 当前激活颜色，根据分类动态变化
     },
 
     onLoad() {
@@ -176,9 +177,20 @@ Page({
     // 切换分类
     onCategoryChange(e) {
         const category = e.currentTarget.dataset.category || '';
+        // 根据分类设置激活颜色
+        let activeColor = '#0052d9'; // 默认蓝色（全部）
+        if (category === 'finance') {
+            activeColor = '#e53e3e'; // 红色（财务工具）
+        } else if (category === 'image') {
+            activeColor = '#ed7b2f'; // 橙色（图片工具）
+        } else if (category === 'life') {
+            activeColor = '#00a870'; // 绿色（生活工具）
+        }
+        
         this.setData({
             currentCategory: category,
-            filteredTools: this.filterTools(this.data.searchValue, category)
+            filteredTools: this.filterTools(this.data.searchValue, category),
+            activeColor: activeColor
         });
     },
 
@@ -256,8 +268,23 @@ Page({
             return;
         }
         
+        // 如果切换到非工具箱tab，使用默认蓝色
+        let activeColor = '#0052d9';
+        if (tabValue === 'tools') {
+            // 如果在工具箱tab，根据当前分类设置颜色
+            const category = this.data.currentCategory;
+            if (category === 'finance') {
+                activeColor = '#e53e3e';
+            } else if (category === 'image') {
+                activeColor = '#ed7b2f';
+            } else if (category === 'life') {
+                activeColor = '#00a870';
+            }
+        }
+        
         this.setData({
-            currentTab: tabValue
+            currentTab: tabValue,
+            activeColor: activeColor
         });
         
         // 根据Tab加载对应数据

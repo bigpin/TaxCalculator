@@ -15,7 +15,7 @@ const TOOLS = [
     {
         id: 'tax-calculator',
         name: '个税计算器',
-        icon: 'money-circle',
+        icon: 'money',
         category: 'finance',
         description: '计算个人所得税，支持多个月份累计计算',
         path: '/pages/tools/tax-calculator/index'

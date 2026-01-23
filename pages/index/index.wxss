@@ -145,13 +145,13 @@ page {
 /* 不同分类的高亮颜色 */
 .category-item.active-all {
   color: #fff;
-  background-color: #333;
+  background-color: #0052d9;
   font-weight: 500;
 }
 
 .category-item.active-finance {
   color: #fff;
-  background-color: #0052d9;
+  background-color: #e53e3e;
   font-weight: 500;
 }
 
@@ -227,7 +227,7 @@ page {
 
 /* 不同分类的图标背景色 */
 .tool-icon.icon-finance {
-  background: linear-gradient(135deg, #e8f0fe 0%, #d4e4fc 100%);
+  background: linear-gradient(135deg, #ffe8e8 0%, #ffd4d4 100%);
 }
 
 .tool-icon.icon-image {
@@ -340,7 +340,6 @@ page {
 }
 
 .tab-item.active .tab-text {
-  color: #0052d9;
   font-weight: 600;
 }
 
@@ -355,8 +354,8 @@ page {
 
 /* 分类标签不同颜色 */
 .tag-finance {
-  background-color: #e8f3ff;
-  color: #0052d9;
+  background-color: #ffe8e8;
+  color: #e53e3e;
 }
 
 .tag-image {

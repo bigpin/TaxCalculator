@@ -63,10 +63,19 @@ async function sendNotification(openid, stockCount, reportDate, stockList) {
     return { success: true, result };
   } catch (error) {
     console.error(`发送失败 - ${openid}:`, error);
+    const errCode = error.errCode || error.errCode || 'UNKNOWN';
+    const errMsg = error.errMsg || error.message || String(error);
+    
+    // 如果是用户拒绝订阅（43101），标记订阅状态为失效
+    if (errCode === 43101 || errMsg.includes('user refuse') || errMsg.includes('43101')) {
+      console.log(`用户 ${openid} 拒绝了订阅消息，将标记为失效状态`);
+      // 注意：这里不能直接更新，因为需要 subscriberId，会在调用处处理
+    }
+    
     return { 
       success: false, 
-      error: String(error.message || error),
-      errorCode: error.errCode || 'UNKNOWN'
+      error: errMsg,
+      errorCode: errCode
     };
   }
 }
@@ -209,11 +218,61 @@ exports.main = async (event, context) => {
     }
     
     const allResults = await Promise.all(tasks);
-    const allSubscribers = allResults.reduce((acc, cur) => {
+    const allSubscribersRaw = allResults.reduce((acc, cur) => {
       return acc.concat(cur.data);
     }, []);
     
-    console.log(`找到 ${allSubscribers.length} 个活跃订阅者`);
+    // 按 openid 去重，确保每个 openid 只有一条记录
+    const openidMap = new Map();
+    const duplicateOpenids = [];
+    
+    for (const subscriber of allSubscribersRaw) {
+      const openid = subscriber._openid;
+      if (!openid) {
+        console.warn('发现没有 _openid 的订阅记录:', subscriber._id);
+        continue;
+      }
+      
+      if (openidMap.has(openid)) {
+        // 发现重复的 openid
+        duplicateOpenids.push({
+          openid: openid,
+          duplicateId: subscriber._id,
+          existingId: openidMap.get(openid)._id
+        });
+        // 保留订阅时间更早的记录，删除较新的
+        const existing = openidMap.get(openid);
+        const existingTime = existing.subscribeTime ? new Date(existing.subscribeTime).getTime() : 0;
+        const newTime = subscriber.subscribeTime ? new Date(subscriber.subscribeTime).getTime() : 0;
+        
+        if (newTime < existingTime) {
+          // 新记录更早，保留新记录，删除旧记录
+          openidMap.set(openid, subscriber);
+        }
+        // 否则保留现有记录
+      } else {
+        openidMap.set(openid, subscriber);
+      }
+    }
+    
+    // 删除重复的记录
+    if (duplicateOpenids.length > 0) {
+      console.log(`发现 ${duplicateOpenids.length} 个重复的 openid，正在清理...`);
+      const deletePromises = duplicateOpenids.map(dup => {
+        return db.collection('stock_signals_subscriber').doc(dup.duplicateId).remove()
+          .then(() => {
+            console.log(`已删除重复记录: ${dup.duplicateId} (openid: ${dup.openid})`);
+          })
+          .catch(err => {
+            console.error(`删除重复记录失败: ${dup.duplicateId}`, err);
+          });
+      });
+      await Promise.all(deletePromises);
+      console.log('重复记录清理完成');
+    }
+    
+    const allSubscribers = Array.from(openidMap.values());
+    console.log(`找到 ${allSubscribers.length} 个活跃订阅者（已去重）`);
     
     // 第三步：遍历订阅者发送通知
     for (const subscriber of allSubscribers) {
@@ -248,6 +307,23 @@ exports.main = async (event, context) => {
         });
       } else {
         results.failed++;
+        
+        // 如果是用户拒绝订阅（43101），将订阅状态标记为失效
+        if (sendResult.errorCode === 43101 || sendResult.errorCode === '43101') {
+          try {
+            await db.collection('stock_signals_subscriber').doc(subscriberId).update({
+              data: {
+                status: 'inactive',
+                lastError: '用户拒绝订阅消息',
+                lastErrorTime: new Date()
+              }
+            });
+            console.log(`已将订阅者 ${openid} 标记为失效状态（用户拒绝）`);
+          } catch (updateErr) {
+            console.error(`更新订阅状态失败: ${subscriberId}`, updateErr);
+          }
+        }
+        
         results.details.push({
           openid: openid,
           status: 'failed',

@@ -68,7 +68,7 @@
                   color="{{item.isFavorite ? '#ffd700' : '#ccc'}}" />
         </view>
         <view class="tool-icon icon-{{item.category}}">
-          <t-icon name="{{item.icon}}" size="48rpx" color="{{item.category === 'finance' ? '#0052d9' : item.category === 'image' ? '#ed7b2f' : item.category === 'life' ? '#00a870' : '#666'}}" />
+          <t-icon name="{{item.icon}}" size="48rpx" color="{{item.category === 'finance' ? '#e53e3e' : item.category === 'image' ? '#ed7b2f' : item.category === 'life' ? '#00a870' : '#666'}}" />
         </view>
         <view class="tool-info">
           <view class="tool-name">{{item.name}}</view>
@@ -107,7 +107,7 @@
                   color="{{item.isFavorite ? '#ffd700' : '#ccc'}}" />
         </view>
         <view class="tool-icon icon-{{item.toolInfo.category}}">
-          <t-icon name="{{item.toolInfo.icon}}" size="48rpx" color="{{item.toolInfo.category === 'finance' ? '#0052d9' : item.toolInfo.category === 'image' ? '#ed7b2f' : item.toolInfo.category === 'life' ? '#00a870' : '#666'}}" />
+          <t-icon name="{{item.toolInfo.icon}}" size="48rpx" color="{{item.toolInfo.category === 'finance' ? '#e53e3e' : item.toolInfo.category === 'image' ? '#ed7b2f' : item.toolInfo.category === 'life' ? '#00a870' : '#666'}}" />
         </view>
         <view class="tool-info">
           <view class="tool-name">{{item.toolInfo.name}}</view>
@@ -147,7 +147,7 @@
           <t-icon name="star-filled" size="40rpx" color="#ffd700" />
         </view>
         <view class="tool-icon icon-{{item.category}}">
-          <t-icon name="{{item.icon}}" size="48rpx" color="{{item.category === 'finance' ? '#0052d9' : item.category === 'image' ? '#ed7b2f' : item.category === 'life' ? '#00a870' : '#666'}}" />
+          <t-icon name="{{item.icon}}" size="48rpx" color="{{item.category === 'finance' ? '#e53e3e' : item.category === 'image' ? '#ed7b2f' : item.category === 'life' ? '#00a870' : '#666'}}" />
         </view>
         <view class="tool-info">
           <view class="tool-name">{{item.name}}</view>
@@ -173,16 +173,16 @@
   <view class="tab-bar-container">
     <view class="custom-tab-bar">
       <view class="tab-item {{currentTab === 'tools' ? 'active' : ''}}" data-tab="tools" bindtap="onTabItemTap">
-        <t-icon name="app" size="48rpx" color="{{currentTab === 'tools' ? '#0052d9' : '#666'}}" />
-        <text class="tab-text">工具箱</text>
+        <t-icon name="app" size="48rpx" color="{{currentTab === 'tools' ? activeColor : '#666'}}" />
+        <text class="tab-text" style="{{currentTab === 'tools' ? 'color: ' + activeColor + ';' : ''}}">工具箱</text>
       </view>
       <view class="tab-item {{currentTab === 'recent' ? 'active' : ''}}" data-tab="recent" bindtap="onTabItemTap">
-        <t-icon name="time" size="48rpx" color="{{currentTab === 'recent' ? '#0052d9' : '#666'}}" />
-        <text class="tab-text">最近使用</text>
+        <t-icon name="time" size="48rpx" color="{{currentTab === 'recent' ? activeColor : '#666'}}" />
+        <text class="tab-text" style="{{currentTab === 'recent' ? 'color: ' + activeColor + ';' : ''}}">最近使用</text>
       </view>
       <view class="tab-item {{currentTab === 'my' ? 'active' : ''}}" data-tab="my" bindtap="onTabItemTap">
-        <t-icon name="user" size="48rpx" color="{{currentTab === 'my' ? '#0052d9' : '#666'}}" />
-        <text class="tab-text">我的</text>
+        <t-icon name="user" size="48rpx" color="{{currentTab === 'my' ? activeColor : '#666'}}" />
+        <text class="tab-text" style="{{currentTab === 'my' ? 'color: ' + activeColor + ';' : ''}}">我的</text>
       </view>
     </view>
   </view>
