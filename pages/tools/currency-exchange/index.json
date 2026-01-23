@@ -6,6 +6,7 @@
   "usingComponents": {
     "t-button": "tdesign-miniprogram/button/button",
     "t-loading": "tdesign-miniprogram/loading/loading",
+    "t-input": "tdesign-miniprogram/input/input",
     "group-btn": "/components/group-btn/index",
     "area": "/components/area/index",
     "output": "/components/output/index"

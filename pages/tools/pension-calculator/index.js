@@ -34,19 +34,48 @@ Page({
 
     // 计算
     calculate() {
-        const yeb = parseInt(this.salaryInput.data.value ? this.salaryInput.data.value : this.data.salary);
+        const yeb = parseFloat(this.salaryInput.data.value ? this.salaryInput.data.value : this.data.salary);
         const result = this.calculateYearEndBounds(yeb);
         
-        this.setData({
-            result: result
-        });
-
-        // 显示结果
-        const output = this.selectComponent('#taxInfo');
-        if (output) {
-            const resultText = `年终奖总计：${result.salary}元\n税率：${result.tax_rate.toFixed(2)}%\n交税：${result.tax.toFixed(2)}元\n余额：${result.balance.toFixed(2)}元`;
-            output.updateText(resultText);
+        // 计算速算扣除数
+        const taxRates = [0.03, 0.1, 0.2, 0.25, 0.3, 0.35, 0.45];
+        const quickDeductions = [0, 210, 1410, 2660, 4410, 7160, 15160];
+        const keyDots = [3000, 12000, 25000, 35000, 55000, 80000];
+        let quickDeduction = 0;
+        const yeb_monthly = yeb / 12;
+        
+        if (yeb_monthly <= keyDots[0]) {
+            quickDeduction = quickDeductions[0];
+        } else {
+            for (let j = 0; j < keyDots.length - 1; j++) {
+                if (yeb_monthly > keyDots[j] && yeb_monthly <= keyDots[j + 1]) {
+                    quickDeduction = quickDeductions[j + 1];
+                    break;
+                }
+            }
+            if (yeb_monthly > 80000) {
+                quickDeduction = quickDeductions[quickDeductions.length - 1];
+            }
         }
+        
+        // 格式化显示数据
+        const formattedSalary = result.salary.toFixed(2);
+        const formattedTax = result.tax.toFixed(2);
+        const formattedBalance = result.balance.toFixed(2);
+        const formattedTaxRate = result.tax_rate.toFixed(0) + '%';
+        const formattedQuickDeduction = quickDeduction.toFixed(2);
+        
+        this.setData({
+            result: {
+                ...result,
+                quickDeduction: quickDeduction,
+                formattedSalary: formattedSalary,
+                formattedTax: formattedTax,
+                formattedBalance: formattedBalance,
+                formattedTaxRate: formattedTaxRate,
+                formattedQuickDeduction: formattedQuickDeduction
+            }
+        });
     },
 
     // 计算年终奖

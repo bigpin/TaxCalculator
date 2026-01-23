@@ -214,37 +214,50 @@ Page({
     }
   },
 
-  // 计算转换
-  calculate() {
-    if (!this.data.fromValue || this.data.fromValue === '') {
-      this.setData({ toValue: '' });
-      return;
-    }
+    // 计算转换
+    calculate() {
+        if (!this.data.fromValue || this.data.fromValue === '') {
+            this.setData({ 
+                toValue: '',
+                resultData: null
+            });
+            return;
+        }
 
-    const value = parseFloat(this.data.fromValue);
-    if (isNaN(value)) {
-      return;
-    }
+        const value = parseFloat(this.data.fromValue);
+        if (isNaN(value)) {
+            return;
+        }
 
-    const fromUnit = this.data.currentUnits[this.data.fromUnitIndex].value;
-    const toUnit = this.data.currentUnits[this.data.toUnitIndex].value;
-    const unitType = this.data.unitType;
+        const fromUnit = this.data.currentUnits[this.data.fromUnitIndex].value;
+        const toUnit = this.data.currentUnits[this.data.toUnitIndex].value;
+        const unitType = this.data.unitType;
 
-    const result = this.convertUnit(value, fromUnit, toUnit, unitType);
-    
-    // 格式化结果，保留适当的小数位数
-    const formattedResult = this.formatResult(result);
-    
-    this.setData({ toValue: formattedResult });
-    
-    // 更新输出组件
-    const outputComponent = this.selectComponent('#resultOutput');
-    if (outputComponent) {
-      const fromLabel = this.data.currentUnits[this.data.fromUnitIndex].label;
-      const toLabel = this.data.currentUnits[this.data.toUnitIndex].label;
-      outputComponent.updateText(`${value} ${fromLabel} = ${formattedResult} ${toLabel}`);
-    }
-  },
+        const result = this.convertUnit(value, fromUnit, toUnit, unitType);
+        
+        // 格式化结果，保留适当的小数位数
+        const formattedResult = this.formatResult(result);
+        
+        const fromLabel = this.data.currentUnits[this.data.fromUnitIndex].label;
+        const toLabel = this.data.currentUnits[this.data.toUnitIndex].label;
+        
+        this.setData({ 
+            toValue: formattedResult,
+            resultData: {
+                formattedResult: `${value} ${fromLabel} = ${formattedResult} ${toLabel}`,
+                fromValue: value.toFixed(4),
+                toValue: formattedResult,
+                fromLabel: fromLabel,
+                toLabel: toLabel
+            }
+        });
+        
+        // 更新输出组件
+        const outputComponent = this.selectComponent('#resultOutput');
+        if (outputComponent) {
+            outputComponent.updateText(`${value} ${fromLabel} = ${formattedResult} ${toLabel}`);
+        }
+    },
 
   // 单位转换核心函数
   convertUnit(value, fromUnit, toUnit, unitType) {
@@ -404,7 +417,8 @@ Page({
     this.setData({
       fromValue: '',
       toValue: '',
-      inputError: false
+      inputError: false,
+      resultData: null
     });
     
     const outputComponent = this.selectComponent('#resultOutput');

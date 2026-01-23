@@ -1,6 +1,6 @@
 <view class="container">
   <view class="form-section">
-    <text class="title">年终奖金额：</text>
+    <text class="title">基本信息：</text>
     <view class="input-group">
       <t-input
         id="salary"
@@ -18,7 +18,46 @@
 
   <group-btn first="恢复默认值" second="计算" bind:tap="onTap" />
 
+  <!-- 结果展示区域 -->
   <view class="result-section" wx:if="{{result}}">
-    <output id="taxInfo" label="计算结果:" />
+    <!-- 顶部蓝色卡片 -->
+    <view class="result-card-blue">
+      <view class="result-card-title">年终奖税后收入</view>
+      <view class="result-card-amount">¥{{result.formattedBalance}}</view>
+      <view class="result-card-sub">
+        <view class="result-sub-card">
+          <view class="result-sub-label">应纳税额</view>
+          <view class="result-sub-value">¥ {{result.formattedTax}}</view>
+        </view>
+        <view class="result-sub-card">
+          <view class="result-sub-label">适用税率</view>
+          <view class="result-sub-value">{{result.formattedTaxRate}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部白色卡片 -->
+    <view class="result-card-white">
+      <view class="result-card-header">
+        <text class="result-detail-title">计算明细</text>
+      </view>
+      <view class="result-detail-list">
+        <view class="result-detail-item">
+          <text class="result-detail-label">奖金总额</text>
+          <text class="result-detail-value">¥ {{result.formattedSalary}}</text>
+        </view>
+        <view class="result-detail-item">
+          <text class="result-detail-label">适用税率</text>
+          <text class="result-detail-value">{{result.formattedTaxRate}}</text>
+        </view>
+        <view class="result-detail-item">
+          <text class="result-detail-label">速算扣除数</text>
+          <text class="result-detail-value">¥ {{result.formattedQuickDeduction}}</text>
+        </view>
+      </view>
+      <view class="result-disclaimer">
+        *结果仅供参考，实际税额以税务机关核定为准。本工具基于2024年最新个税政策。
+      </view>
+    </view>
   </view>
 </view>

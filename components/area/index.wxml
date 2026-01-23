@@ -1,4 +1,10 @@
-<t-cell class="mb-16" title="选择币种" arrow hover note="{{dateText}}" bind:click="onAreaPicker" />
+<view class="area-container">
+  <t-cell class="mb-16" title="选择币种" arrow hover note="{{dateText}}" bind:click="onAreaPicker" />
+  <view class="exchange-btn" bindtap="exchange">
+    <text class="exchange-icon">⇄</text>
+    <text class="exchange-text">调换</text>
+  </view>
+</view>
 
 <t-picker
   visible="{{dateVisible}}"

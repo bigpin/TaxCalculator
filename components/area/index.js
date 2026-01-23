@@ -2,28 +2,35 @@ Component({
   data: {
     dateVisible: false,
     dateText: '请选择币种',
-    dateValue: ['CNY', 'USD'],
+    dateValue: ['USD', 'CNY'],
     code: [
-      { "label": "人民币 (CNY)", "value": "CNY" },
-      { "label": "美元 (USD)", "value": "USD" },
-      { "label": "日元 (JPY)", "value": "JPY" },
       { "label": "欧元 (EUR)", "value": "EUR" },
+      { "label": "美元 (USD)", "value": "USD" },
       { "label": "英镑 (GBP)", "value": "GBP" },
-      { "label": "韩元 (KRW)", "value": "KRW" },
-      { "label": "港币 (HKD)", "value": "HKD" },
+      { "label": "日元 (JPY)", "value": "JPY" },
       { "label": "澳大利亚元 (AUD)", "value": "AUD" },
       { "label": "加拿大元 (CAD)", "value": "CAD" },
-      { "label": "新加坡元 (SGD)", "value": "SGD" },
-      { "label": "新台币 (TWD)", "value": "TWD" },
-      { "label": "泰国铢 (THB)", "value": "THB" },
       { "label": "瑞士法郎 (CHF)", "value": "CHF" },
-      { "label": "俄罗斯卢布 (RUB)", "value": "RUB" },
+      { "label": "人民币 (CNY)", "value": "CNY" },
+      { "label": "捷克克朗 (CZK)", "value": "CZK" },
+      { "label": "丹麦克朗 (DKK)", "value": "DKK" },
+      { "label": "港币 (HKD)", "value": "HKD" },
+      { "label": "匈牙利福林 (HUF)", "value": "HUF" },
       { "label": "印度卢比 (INR)", "value": "INR" },
-      { "label": "越南盾 (VND)", "value": "VND" },
-      { "label": "马来西亚林吉特 (MYR)", "value": "MYR" },
-      { "label": "菲律宾比索 (PHP)", "value": "PHP" },
       { "label": "印尼盾 (IDR)", "value": "IDR" },
-      { "label": "新西兰元 (NZD)", "value": "NZD" }
+      { "label": "韩元 (KRW)", "value": "KRW" },
+      { "label": "墨西哥比索 (MXN)", "value": "MXN" },
+      { "label": "马来西亚林吉特 (MYR)", "value": "MYR" },
+      { "label": "挪威克朗 (NOK)", "value": "NOK" },
+      { "label": "新西兰元 (NZD)", "value": "NZD" },
+      { "label": "菲律宾比索 (PHP)", "value": "PHP" },
+      { "label": "波兰兹罗提 (PLN)", "value": "PLN" },
+      { "label": "俄罗斯卢布 (RUB)", "value": "RUB" },
+      { "label": "新加坡元 (SGD)", "value": "SGD" },
+      { "label": "瑞典克朗 (SEK)", "value": "SEK" },
+      { "label": "泰国铢 (THB)", "value": "THB" },
+      { "label": "土耳其里拉 (TRY)", "value": "TRY" },
+      { "label": "南非兰特 (ZAR)", "value": "ZAR" }
     ]
   },
   
@@ -31,6 +38,11 @@ Component({
     attached() {
       this.setData({
         dateText: `${this.data.dateValue[0]} → ${this.data.dateValue[1]}`
+      });
+      // 触发初始汇率查询事件
+      this.triggerEvent("exchange", { 
+        from_code: this.data.dateValue[0], 
+        to_code: this.data.dateValue[1] 
       });
     }
   },
