@@ -5,6 +5,7 @@ Page({
         old: '8',
         lost: '0.5',
         medical: '2',
+        medicalFixed: '3',
         housingProvidentFund: '12',
         attch: '6000',
         pension: '0',
@@ -12,12 +13,15 @@ Page({
         oldErr: false,
         lostErr: false,
         medicalErr: false,
+        medicalFixedErr: false,
         housingProvidentFundErr: false,
         attchErr: false,
         pensionErr: false,
         monthlyNetSalaryArray: [],
         detailInfo: [],
-        resultList: []
+        resultList: [],
+        yearResult: null,
+        monthDetailsExpanded: false
     },
 
     onLoad() {
@@ -34,6 +38,7 @@ Page({
         this.oldInput = this.selectComponent('#old');
         this.lostInput = this.selectComponent('#lost');
         this.medicalInput = this.selectComponent('#medical');
+        this.medicalFixedInput = this.selectComponent('#medicalFixed');
         this.housingProvidentFundInput = this.selectComponent('#HousingProvidentFund');
         this.attchInput = this.selectComponent('#attach');
         this.pensionInput = this.selectComponent('#pension');
@@ -56,6 +61,9 @@ Page({
             case 'medical':
                 this.setData({ medicalErr: !isNumber });
                 break;
+            case 'medicalFixed':
+                this.setData({ medicalFixedErr: !isNumber });
+                break;
             case 'HousingProvidentFund':
                 this.setData({ housingProvidentFundErr: !isNumber });
                 break;
@@ -74,13 +82,17 @@ Page({
         if (this.oldInput) this.oldInput.updateValue(this.data.old);
         if (this.lostInput) this.lostInput.updateValue(this.data.lost);
         if (this.medicalInput) this.medicalInput.updateValue(this.data.medical);
+        if (this.medicalFixedInput) this.medicalFixedInput.updateValue(this.data.medicalFixed);
         if (this.housingProvidentFundInput) this.housingProvidentFundInput.updateValue(this.data.housingProvidentFund);
         if (this.attchInput) this.attchInput.updateValue(this.data.attch);
         if (this.pensionInput) this.pensionInput.updateValue(this.data.pension);
         this.setData({
             monthlyNetSalaryArray: [],
             detailInfo: [],
-            resultList: []
+            resultList: [],
+            yearResult: null,
+            monthDetails: [],
+            monthDetailsExpanded: false
         });
     },
 
@@ -103,30 +115,73 @@ Page({
         const old = this.getInputValue(this.oldInput, this.data.old) / 100.0;
         const lost = this.getInputValue(this.lostInput, this.data.lost) / 100.0;
         const medical = this.getInputValue(this.medicalInput, this.data.medical) / 100.0;
+        const medicalFixed = parseFloat(this.getInputValue(this.medicalFixedInput, this.data.medicalFixed) || 0);
         const hpf = this.getInputValue(this.housingProvidentFundInput, this.data.housingProvidentFund) / 100.0;
         const attch = this.getInputValue(this.attchInput, this.data.attch);
         const pension = this.getInputValue(this.pensionInput, this.data.pension);
 
-        const monthlyNetSalaryArray = this.calculateMonthlyNetSalary(monthlySalary, old, lost, medical, hpf, attch, pension);
+        const monthlyNetSalaryArray = this.calculateMonthlyNetSalary(monthlySalary, old, lost, medical, medicalFixed, hpf, attch, pension);
         
-        // 更新结果列表（避免多次点击计算导致 detailInfo 叠加）
-        const detailInfo = [];
-        const resultList = monthlyNetSalaryArray.map((netSalary, index) => {
-            detailInfo.push({
-                month: `${index + 1}月`,
-                info: this.formatTaxInfo(netSalary),
-            });
+        // 计算年度总计
+        const salaryNum = parseFloat(monthlySalary);
+        const attchDeduction = parseFloat(attch || 0);
+        const pensionDeduction = parseFloat(pension || 0);
+        const pensionDeductionCapped = Math.min(pensionDeduction, 1000);
+        const socialInsuranceRate = old + lost + medical + hpf;
+        const monthlySocialInsurance = salaryNum * socialInsuranceRate + medicalFixed;
+        const taxThreshold = 5000;
+        const monthlyTaxableIncome = salaryNum - monthlySocialInsurance - attchDeduction - pensionDeductionCapped - taxThreshold;
+        
+        // 年度总计
+        const yearTotalSalary = salaryNum * 12; // 年度总收入
+        const yearTotalSocialInsurance = monthlySocialInsurance * 12; // 年度五险一金
+        const lastMonthResult = monthlyNetSalaryArray[11] || monthlyNetSalaryArray[monthlyNetSalaryArray.length - 1];
+        const yearTotalTax = lastMonthResult ? (lastMonthResult.cumTax || 0) : 0; // 年度总个税
+        const yearTotalNetSalary = yearTotalSalary - yearTotalSocialInsurance - yearTotalTax; // 年度税后收入
+        const yearAvgNetSalary = yearTotalNetSalary / 12; // 平均月税后收入
+        
+        // 计算年度平均税率（使用12月的累计数据）
+        let avgTaxRate = 0;
+        let avgQuickDeduction = 0;
+        if (monthlyTaxableIncome > 0) {
+            const yearCumulativeTaxableIncome = monthlyTaxableIncome * 12;
+            const taxInfo = this.calcCumulativeTax(yearCumulativeTaxableIncome);
+            avgTaxRate = taxInfo.rate;
+            avgQuickDeduction = taxInfo.quickDeduction;
+        }
 
+        // 格式化年度数据
+        const formattedYearTotalNetSalary = yearTotalNetSalary.toFixed(2);
+        const formattedYearTotalTax = yearTotalTax.toFixed(2);
+        const formattedYearTotalSocialInsurance = yearTotalSocialInsurance.toFixed(2);
+        const formattedYearAvgNetSalary = yearAvgNetSalary.toFixed(2);
+        const formattedYearTaxableIncome = (monthlyTaxableIncome > 0 ? monthlyTaxableIncome * 12 : 0).toFixed(2);
+        const formattedAvgTaxRate = avgTaxRate > 0 ? (avgTaxRate * 100).toFixed(0) + '%' : '0%';
+        const formattedAvgQuickDeduction = avgQuickDeduction.toFixed(2);
+
+        // 准备每月明细数据
+        const monthDetails = monthlyNetSalaryArray.map((item, index) => {
             return {
-                name: `${index + 1}月`,
-                label: `${netSalary.salary.toFixed(2)}, 本月个税：${(netSalary.monthTax || 0).toFixed(2)}, 累计个税：${(netSalary.cumTax || 0).toFixed(2)}`,
+                month: index + 1,
+                salary: item.salary.toFixed(2),
+                monthTax: (item.monthTax || 0).toFixed(2),
+                cumTax: (item.cumTax || 0).toFixed(2),
+                socialInsurance: monthlySocialInsurance.toFixed(2)
             };
         });
 
         this.setData({
             monthlyNetSalaryArray: monthlyNetSalaryArray,
-            resultList: resultList,
-            detailInfo,
+            yearResult: {
+                formattedYearTotalNetSalary: formattedYearTotalNetSalary,
+                formattedYearAvgNetSalary: formattedYearAvgNetSalary,
+                formattedYearTotalTax: formattedYearTotalTax,
+                formattedYearTotalSocialInsurance: formattedYearTotalSocialInsurance,
+                formattedYearTaxableIncome: formattedYearTaxableIncome,
+                formattedAvgTaxRate: formattedAvgTaxRate,
+                formattedAvgQuickDeduction: formattedAvgQuickDeduction
+            },
+            monthDetails: monthDetails
         });
 
         // 保存到全局数据
@@ -146,11 +201,15 @@ Page({
         }
         const rate = taxRates[level];
         const quick = quickDeductions[level];
-        return cumulativeTaxableIncome * rate - quick;
+        return {
+            tax: cumulativeTaxableIncome * rate - quick,
+            rate: rate,
+            quickDeduction: quick
+        };
     },
 
     // 计算每月净工资
-    calculateMonthlyNetSalary(monthlySalary, old, lost, medical, hpf, attch, pension) {
+    calculateMonthlyNetSalary(monthlySalary, old, lost, medical, medicalFixed, hpf, attch, pension) {
         const socialInsuranceRate = old + lost + medical + hpf;
         const taxThreshold = 5000;
 
@@ -158,7 +217,7 @@ Page({
         const salaryNum = parseFloat(monthlySalary);
         const attchDeduction = parseFloat(attch || 0);
         const pensionDeduction = parseFloat(pension || 0);
-        const socialInsurance = salaryNum * socialInsuranceRate + 3;
+        const socialInsurance = salaryNum * socialInsuranceRate + medicalFixed;
         // 个人养老金（年限额 12000，按月不超过 1000）
         const pensionDeductionCapped = Math.min(pensionDeduction, 1000);
         // 每月应纳税所得额（当月）：工资 - 五险一金 - 专项附加扣除 - 个人养老金 - 起征点
@@ -174,7 +233,7 @@ Page({
                     "cumTax": totalTaxPaid,
                     "old": salaryNum * old,
                     "lost": salaryNum * lost,
-                    "medical": salaryNum * medical + 3,
+                    "medical": salaryNum * medical + medicalFixed,
                     "house": salaryNum * hpf,
                     "pension": pensionDeductionCapped
                 });
@@ -182,7 +241,8 @@ Page({
             }
             
             const cumulativeTaxableIncome = monthlyTaxableIncome * i;
-            const cumulativeTax = this.calcCumulativeTax(cumulativeTaxableIncome);
+            const cumulativeTaxInfo = this.calcCumulativeTax(cumulativeTaxableIncome);
+            const cumulativeTax = cumulativeTaxInfo.tax;
             // 本月应缴税 = 累计应纳税额 - 已累计缴税
             let currentTax = cumulativeTax - totalTaxPaid;
             if (currentTax < 0) currentTax = 0;
@@ -194,7 +254,7 @@ Page({
                 "salary": netSalary,
                 "old": salaryNum * old,
                 "lost": salaryNum * lost,
-                "medical": salaryNum * medical + 3,
+                "medical": salaryNum * medical + medicalFixed,
                 "house": salaryNum * hpf,
                 "pension": pensionDeductionCapped,
                 "monthTax": currentTax,
@@ -236,5 +296,13 @@ Page({
                 url: `/pages/detail/detail?index=${index}`
             });
         }
-    }
+    },
+
+    // 展开/收起每月明细
+    toggleMonthDetails() {
+        this.setData({
+            monthDetailsExpanded: !this.data.monthDetailsExpanded
+        });
+    },
+
 });

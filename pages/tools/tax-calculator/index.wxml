@@ -1,6 +1,6 @@
 <view class="container">
   <view class="form-section">
-    <text class="title">税率信息：</text>
+    <text class="title">基本信息：</text>
     <view class="input-group">
       <t-input
         id="salary"
@@ -13,55 +13,96 @@
         tips="{{salaryErr ? '请输入正确数字' : ''}}"
         t-class-tips="tips"
       />
-      <t-input
-        id="old"
-        label="养老"
-        placeholder="8"
-        suffix="%"
-        align="right"
-        type="number"
-        bindchange="onTexInput"
-        tips="{{oldErr ? '请输入正确的税率' : ''}}"
-        t-class-tips="tips"
-      />
-      <t-input
-        id="lost"
-        label="失业"
-        placeholder="0.5"
-        suffix="%"
-        align="right"
-        type="number"
-        bindchange="onTexInput"
-        tips="{{lostErr ? '请输入正确的税率' : ''}}"
-        t-class-tips="tips"
-      />
-      <t-input
-        id="medical"
-        label="医疗"
-        placeholder="2"
-        suffix="% + 3元"
-        align="right"
-        type="number"
-        bindchange="onTexInput"
-        tips="{{medicalErr ? '请输入正确的税率' : ''}}"
-        t-class-tips="tips"
-      />
-      <t-input
-        id="HousingProvidentFund"
-        label="住房公积金"
-        placeholder="12"
-        suffix="%"
-        align="right"
-        type="number"
-        bindchange="onTexInput"
-        tips="{{housingProvidentFundErr ? '请输入正确的税率' : ''}}"
-        t-class-tips="tips"
-      />
+    </view>
+  </view>
+
+  <view class="form-section">
+    <text class="title">五险一金：</text>
+    <view class="input-group">
+      <view class="input-row">
+        <view class="input-col">
+          <t-input
+            id="old"
+            label="养老"
+            placeholder="8"
+            suffix="%"
+            align="right"
+            type="number"
+            bindchange="onTexInput"
+            tips="{{oldErr ? '请输入正确的税率' : ''}}"
+            t-class-tips="tips"
+          />
+        </view>
+        <view class="input-col-divider"></view>
+        <view class="input-col">
+          <t-input
+            id="lost"
+            label="失业"
+            placeholder="0.5"
+            suffix="%"
+            align="right"
+            type="number"
+            bindchange="onTexInput"
+            tips="{{lostErr ? '请输入正确的税率' : ''}}"
+            t-class-tips="tips"
+          />
+        </view>
+      </view>
+      <view class="input-row">
+        <view class="input-col">
+          <t-input
+            id="medical"
+            label="医疗"
+            placeholder="2"
+            suffix="%"
+            align="right"
+            type="number"
+            bindchange="onTexInput"
+            tips="{{medicalErr ? '请输入正确的税率' : ''}}"
+            t-class-tips="tips"
+          />
+        </view>
+        <view class="input-col-divider"></view>
+        <view class="input-col">
+          <t-input
+            id="HousingProvidentFund"
+            label="住房公积金"
+            placeholder="12"
+            suffix="%"
+            align="right"
+            type="number"
+            bindchange="onTexInput"
+            tips="{{housingProvidentFundErr ? '请输入正确的税率' : ''}}"
+            t-class-tips="tips"
+          />
+        </view>
+      </view>
+      <view class="input-row">
+        <view class="input-col-full">
+          <t-input
+            id="medicalFixed"
+            label="医疗固定金额"
+            placeholder="3"
+            suffix="元"
+            align="right"
+            type="number"
+            bindchange="onTexInput"
+            tips="{{medicalFixedErr ? '请输入正确数字' : ''}}"
+            t-class-tips="tips"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="form-section">
+    <text class="title">其他扣除：</text>
+    <view class="input-group">
       <t-input
         id="attach"
         label="专项附加扣除"
         placeholder="6000"
-        suffix=""
+        suffix="元"
         align="right"
         type="number"
         bindchange="onTexInput"
@@ -84,15 +125,75 @@
 
   <group-btn first="恢复默认值" second="计算" bind:tap="onTap" />
 
-  <view class="result-section" wx:if="{{resultList.length > 0}}">
-    <view class="result-title">计算结果</view>
-    <pull-down-list 
-      id='taxInfoList' 
-      name="个税结果" 
-      icon="chat" 
-      defaultOpen="true" 
-      childArr="{{resultList}}" 
-      bind:click="clickHandle" 
-    />
+  <!-- 结果展示区域 -->
+  <view class="result-section" wx:if="{{yearResult}}">
+    <!-- 顶部蓝色卡片 -->
+    <view class="result-card-blue">
+      <view class="result-card-title">年度税后收入</view>
+      <view class="result-card-amount">¥{{yearResult.formattedYearTotalNetSalary}}</view>
+      <view class="result-card-sub">
+        <view class="result-sub-card">
+          <view class="result-sub-label">年度个税</view>
+          <view class="result-sub-value">¥ {{yearResult.formattedYearTotalTax}}</view>
+        </view>
+        <view class="result-sub-card">
+          <view class="result-sub-label">年度五险一金</view>
+          <view class="result-sub-value">¥ {{yearResult.formattedYearTotalSocialInsurance}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部白色卡片 -->
+    <view class="result-card-white">
+      <view class="result-card-header">
+        <text class="result-detail-title">年度统计</text>
+      </view>
+      <view class="result-detail-list">
+        <view class="result-detail-item">
+          <text class="result-detail-label">平均月税后收入</text>
+          <text class="result-detail-value">¥ {{yearResult.formattedYearAvgNetSalary}}</text>
+        </view>
+        <view class="result-detail-item">
+          <text class="result-detail-label">年度应纳税所得额</text>
+          <text class="result-detail-value">¥ {{yearResult.formattedYearTaxableIncome}}</text>
+        </view>
+        <view class="result-detail-item">
+          <text class="result-detail-label">平均适用税率</text>
+          <text class="result-detail-value">{{yearResult.formattedAvgTaxRate}}</text>
+        </view>
+        <view class="result-detail-item">
+          <text class="result-detail-label">速算扣除数</text>
+          <text class="result-detail-value">¥ {{yearResult.formattedAvgQuickDeduction}}</text>
+        </view>
+      </view>
+      
+      <!-- 每月明细展开 -->
+      <view class="month-details-section">
+        <view class="month-details-header" bindtap="toggleMonthDetails">
+          <text class="month-details-title">每月明细</text>
+          <text class="month-details-arrow {{monthDetailsExpanded ? 'expanded' : ''}}">›</text>
+        </view>
+        <view class="month-details-content" wx:if="{{monthDetailsExpanded}}">
+          <view class="month-detail-item" wx:for="{{monthDetails}}" wx:key="month">
+            <view class="month-detail-header">
+              <text class="month-detail-month">{{item.month}}月</text>
+              <text class="month-detail-salary">¥{{item.salary}}</text>
+            </view>
+            <view class="month-detail-row">
+              <text class="month-detail-label">本月个税：</text>
+              <text class="month-detail-value">¥{{item.monthTax}}</text>
+            </view>
+            <view class="month-detail-row">
+              <text class="month-detail-label">累计个税：</text>
+              <text class="month-detail-value">¥{{item.cumTax}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="result-disclaimer">
+        *结果仅供参考，实际税额以税务机关核定为准。本工具基于2025年最新个税政策。
+      </view>
+    </view>
   </view>
 </view>
